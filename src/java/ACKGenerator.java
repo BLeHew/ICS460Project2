@@ -17,5 +17,4 @@ public class ACKGenerator {
 	   protected static int generateACK(int lengthOfPacket) {
 		   return lengthOfPacket+1; 
 	   }
-
 }
