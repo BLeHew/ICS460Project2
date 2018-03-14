@@ -30,13 +30,28 @@ public class Server {
         while (true) {
                 createRequestPacket();
                 receivePacketIntoSocket();
-                printPacketInfo();
-                packetNumber++;
-                writeDataToStream();
+                if (verifyPacket()) {
+                		respondPositive();
+                		printPacketInfo();
+                		packetNumber++;
+                		writeDataToStream();
+                }else {
+                		respondNegative();
+                }              
         }
-
     }
-    private void printPacketInfo() {
+    private void respondNegative() {
+		// TODO Auto-generated method stub
+		
+	}
+	private void respondPositive() {
+		// TODO Auto-generated method stub
+		
+	}
+	private boolean verifyPacket() {
+    		return true;		
+	}
+	private void printPacketInfo() {
         System.out.println("\nserver- PACKET RECEIVED. INFO: \n"
             + "srv- PACKET_NUMBER: "
             + packetNumber
