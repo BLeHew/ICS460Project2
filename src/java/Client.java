@@ -50,6 +50,7 @@ public class Client {
 
                 //create the packet to be sent by filling it with information from the fileStream buffer
                 sendPacket = new DatagramPacket(buffer, packetSize, IPAddress, PORT);
+                
 
                 sendClientPacket();
 
