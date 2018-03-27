@@ -1,31 +1,32 @@
-import java.util.Arrays;
-
 public class Packet {
+
+    public static final int PACKETHEADERSIZE = 12;
 	private byte cksum;
     private byte len;
     private byte ackno;
     private byte seqno;
     private byte data[];
 
-    public Packet(byte len) {
-    		this.len = len;
+    public Packet(int len) {
+    		this.len = (byte)len;
     }
-    
+    public Packet() {}; // empty constructor
+
     private byte[] generateHeaderAsArrayOfBytes() {
-    		byte header[] = null;
-    		Arrays.fill(header, cksum);
-    		Arrays.fill(header, len);
-    		Arrays.fill(header, ackno);
-    		Arrays.fill(header, seqno);
-		return header;
+    		byte header[] = new byte[4];
+        		header[0] = cksum;
+        		header[1] = len;
+        		header[2] = ackno;
+        		header[3] = seqno;
+        	return header;
     }
-    
+
     /**
      * combines the data and header byte[]s and returns them as one byte[]
      * @return
      */
     public byte[] getPacketAsArrayOfBytes(){
-	    	byte[] header = generateHeaderAsArrayOfBytes();	    	
+	    	byte[] header = generateHeaderAsArrayOfBytes();
 	    	byte[] combined = new byte[header.length + data.length];
 	    	System.arraycopy(header,0,combined,0         ,header.length);
 	    	System.arraycopy(data,0,combined,header.length,data.length);
@@ -42,10 +43,6 @@ public class Packet {
 
 	public void setCksum(byte cksum) {
 		this.cksum = cksum;
-	}
-
-	public byte getLen() {
-		return len;
 	}
 
 	public void setLen(byte len) {
