@@ -1,10 +1,15 @@
+package network;
+import generators.*;
+import helpers.*;
+import network.*;
+
 public class Packet {
 
     public static final int PACKETHEADERSIZE = 12;
-	private byte cksum;
-    private byte len;
-    private byte ackno;
-    private byte seqno;
+	private short ckSum;
+    private short len;
+    private int ackNo;
+    private int seqNo;
     private byte data[];
 
     public Packet(int len) {
@@ -12,57 +17,53 @@ public class Packet {
     }
     public Packet() {}; // empty constructor
 
-    private byte[] generateHeaderAsArrayOfBytes() {
-    		byte header[] = new byte[4];
-        		header[0] = cksum;
-        		header[1] = len;
-        		header[2] = ackno;
-        		header[3] = seqno;
-        	return header;
+    public byte[] generateHeaderAsArrayOfBytes() {
+    	HeaderGenerator hg = new HeaderGenerator(this);
+    	return hg.getHeader();
     }
-
     /**
      * combines the data and header byte[]s and returns them as one byte[]
      * @return
      */
     public byte[] getPacketAsArrayOfBytes(){
-	    	byte[] header = generateHeaderAsArrayOfBytes();
-	    	byte[] combined = new byte[header.length + data.length];
-	    	System.arraycopy(header,0,combined,0         ,header.length);
-	    	System.arraycopy(data,0,combined,header.length,data.length);
-	    	return combined;
+	    	return Converter.toBytes(this);
     }
+    /*
+     * Functions to convert the argument to a byte array.
+     * Source: https://stackoverflow.com/questions/1936857/convert-integer-into-byte-array-java.%20%20%20%20%20%20
+     */
+
 
     public void setPacketSize(int size) {
         data = new byte[size];
     }
 
-	public byte getCksum() {
-		return cksum;
+	public short getCksum() {
+		return ckSum;
 	}
 
 	public void setCksum(byte cksum) {
-		this.cksum = cksum;
+		this.ckSum = cksum;
 	}
 
 	public void setLen(byte len) {
 		this.len = len;
 	}
 
-	public byte getAckno() {
-		return ackno;
+	public int getAckno() {
+		return ackNo;
 	}
 
 	public void setAckno(byte ackno) {
-		this.ackno = ackno;
+		this.ackNo = ackno;
 	}
 
-	public byte getSeqno() {
-		return seqno;
+	public int getSeqno() {
+		return seqNo;
 	}
 
 	public void setSeqno(byte seqno) {
-		this.seqno = seqno;
+		this.seqNo = seqno;
 	}
 
 	public byte[] getData() {
@@ -76,5 +77,9 @@ public class Packet {
 	public int getHeaderSize() {
 		return generateHeaderAsArrayOfBytes().length;
 	}
+    public int getLen() {
+        return len;
+    }
+
 
 }

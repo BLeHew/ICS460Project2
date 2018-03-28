@@ -1,5 +1,9 @@
+package generators;
+
 import java.io.*;
 import java.net.*;
+
+import network.*;
 
 public class PacketGenerator {
     private FileInputStream fileStreamIn;

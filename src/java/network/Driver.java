@@ -1,4 +1,7 @@
+package network;
 import java.util.*;
+
+import network.*;
 
 public class Driver {
     static Scanner clientOrServerInput = new Scanner(System.in);

@@ -7,3 +7,8 @@
 /Server.class
 /PacketGenerator.class
 /PacketGenerator$1.class
+/Converter.class
+/HeaderGenerator.class
+/generators/
+/network/
+/helpers/
