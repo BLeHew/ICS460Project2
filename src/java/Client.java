@@ -9,18 +9,14 @@ public class Client {
     private InetAddress IPAddress;
 
     private DatagramSocket clientSocket;
+    private DatagramPacket sendPacket;
+    private DatagramPacket[] window;
 
     private Scanner inFromUser = new Scanner(System.in);
-
-
-
-    private DatagramPacket sendPacket;
 
     private int packetNum = 0;
     private int totalPackets;
     private int startOffset = 0;
-
-    private DatagramPacket[] window;
 
     private FileInputStream fileStreamIn;
 
@@ -69,12 +65,12 @@ public class Client {
 
     private void sendClientPacket() {
         try {
-            System.out.println("client- Sending packet: " + packetNum + "/" + totalPackets);
-            System.out.println("client- PACKET_OFFSET: " + startOffset + " - END: "+ (startOffset += sendPacket.getLength()));
+            System.out.println("[CLIENT]: Sending packet: " + packetNum + "/" + totalPackets);
+            System.out.println("[CLIENT]: PACKET_OFFSET: " + startOffset + " - END: "+ (startOffset += sendPacket.getLength()) + "\n");
             clientSocket.send(sendPacket);
 
         }catch(IOException io) {
-            System.err.println("client- Error in sending packet");
+            System.err.println("[CLIENT]: Error in sending packet");
         }
     }
     private boolean createFileStream(String filePath) {

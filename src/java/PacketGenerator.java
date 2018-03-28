@@ -12,12 +12,12 @@ public class PacketGenerator {
         this.packetSize = packetSize;
         fileStreamIn = fis;
         buffer = new byte[packetSize];
+        currentPacket = new Packet(packetSize);
     }
 
     public DatagramPacket getPacketToSend() {
         readFileStreamIntoBuffer();
         //TODO set the acknowledgement number as well as sequence and checksum numbers
-        currentPacket = new Packet(packetSize);
         currentPacket.setData(buffer);
         currentPacket.setAckno((byte) 0);
         currentPacket.setCksum((byte) 0);

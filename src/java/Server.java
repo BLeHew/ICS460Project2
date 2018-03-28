@@ -37,29 +37,29 @@ public class Server {
                 		writeDataToStream();
                 }else {
                 		respondNegative();
-                }              
+                }
         }
     }
     private void respondNegative() {
 		// TODO Auto-generated method stub
-		
+
 	}
 	private void respondPositive() {
 		// TODO Auto-generated method stub
-		
+
 	}
 	private boolean verifyPacket() {
-    		return true;		
+    		return true;
 	}
 	private void printPacketInfo() {
-        System.out.println("\nserver- PACKET RECEIVED. INFO: \n"
-            + "srv- PACKET_NUMBER: "
+        System.out.println("\n[SERVER]: PACKET RECEIVED. INFO: \n"
+            + "[SERVER]: PACKET_NUMBER: "
             + packetNumber
             + "\n"
-            + "srv- PACKET_LENGTH: "
+            + "[SERVER]: PACKET_LENGTH: "
             + request.getLength()
             + "\n"
-            + "srv- PACKET_OFFSET: "
+            + "[SERVER]: PACKET_OFFSET: "
             + "START:" + startOffset + " - END: "+ (startOffset += request.getLength())
             + "\n"
             );
