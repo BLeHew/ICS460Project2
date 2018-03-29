@@ -70,10 +70,11 @@ public class Client {
 
                 if(!packetWindow.isFull()) {
                      sendClientPacket();
-                     placePacketInWindow();
+                     packetWindow.add(sendPacket);
                 }
                 else {
                     waitForResponsePacket();
+                    packetWindow.remove(responsePacket);
                 }
 
 
@@ -83,9 +84,6 @@ public class Client {
 
     }
 
-    private void placePacketInWindow() {
-       packetWindow.add(sendPacket);
-    }
     private void waitForResponsePacket() {
         try {
             clientSocket.receive(responsePacket);
