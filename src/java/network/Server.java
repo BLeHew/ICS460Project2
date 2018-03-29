@@ -12,7 +12,7 @@ public class Server {
 	private FileOutputStream fileStreamOut;
 
 
-	private byte[] receiveData = new byte[1024];
+	private byte[] receiveData = new byte[500];
 
 	public Server() {
 	    Runnable r = new Runnable() {
@@ -28,8 +28,9 @@ public class Server {
 	    createServerSocket(PORT);
         createFileStreamOut("receiveFile.jpg");
 
+
         while (true) {
-                createRequestPacket();
+                request = new DatagramPacket(receiveData, receiveData.length);
                 receivePacketIntoSocket();
                 if (verifyPacket()) {
                 		respondPositive();
@@ -80,9 +81,7 @@ public class Server {
             x.printStackTrace();
         }
     }
-    private void createRequestPacket() {
-        request = new DatagramPacket(receiveData, receiveData.length);
-    }
+
     private void createFileStreamOut(String fileOutName) {
         try {
             fileStreamOut = new FileOutputStream(fileOutName);

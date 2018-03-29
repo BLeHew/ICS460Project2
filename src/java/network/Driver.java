@@ -1,16 +1,16 @@
 package network;
 import java.util.*;
 
-import network.*;
-
 public class Driver {
     static Scanner clientOrServerInput = new Scanner(System.in);
     static String cliOrServ;
 
     public static void main(String args[]) {
        // clientOrServerMethod();
+        /*
        Client client = new Client();
        Server server = new Server();
+       */
     }
     // TODO exception handling
 

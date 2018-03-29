@@ -1,14 +1,4 @@
-/ACKGenerator.class
-/Client$1.class
-/Client.class
-/Driver.class
-/Packet.class
-/Server$1.class
-/Server.class
-/PacketGenerator.class
-/PacketGenerator$1.class
-/Converter.class
-/HeaderGenerator.class
 /generators/
-/network/
 /helpers/
+/network/
+/packet/

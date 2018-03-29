@@ -1,6 +1,6 @@
 package helpers;
 
-import network.*;
+import packet.*;
 
 public class Converter {
     /*

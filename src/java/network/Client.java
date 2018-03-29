@@ -12,8 +12,14 @@ public class Client {
     private InetAddress IPAddress;
 
     private DatagramSocket clientSocket;
+
+    private DatagramPacket responsePacket;
     private DatagramPacket sendPacket;
-    private DatagramPacket[] window;
+
+    //TODO allow user to determine the size of the window
+    private DatagramPacket[] window = new DatagramPacket[5];
+
+    private PacketGenerator packetGenerator;
 
     private Scanner inFromUser = new Scanner(System.in);
 
@@ -47,18 +53,25 @@ public class Client {
 
         //TODO allow user to designate the size of the packets to be sent
         int packetSize = 500;
-        PacketGenerator pg = new PacketGenerator(fileStreamIn, packetSize);
 
-        totalPackets = pg.packetsLeft(); //get number of packets to send
+        packetGenerator = new PacketGenerator(fileStreamIn, packetSize);
 
-        while(pg.hasMoreData()) {
+        totalPackets = packetGenerator.packetsLeft(); //get number of packets to send
+
+        while(packetGenerator.hasMoreData()) {
 
                 //get the next packet to be sent from the generator
-                sendPacket = pg.getPacketToSend();
+                sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
                 sendPacket.setPort(PORT);
 
                 sendClientPacket();
+
+                placePacketInWindow();
+
+                waitForResponsePacket();
+
+
 
                 packetNum++;
             }
@@ -66,12 +79,26 @@ public class Client {
 
     }
 
+    private void placePacketInWindow() {
+
+    }
+    private void waitForResponsePacket() {
+        try {
+            clientSocket.receive(responsePacket);
+        } catch ( IOException x ) {
+            x.printStackTrace();
+        }
+
+    }
     private void sendClientPacket() {
         try {
-            System.out.println("[CLIENT]: Sending packet: " + packetNum + "/" + totalPackets);
-            System.out.println("[CLIENT]: PACKET_OFFSET: " + startOffset + " - END: "+ (startOffset += sendPacket.getLength()) + "\n");
+            System.out.println("[CLIENT]: [SENDING]: " + packetNum + "/" + totalPackets);
+            System.out.println("[CLIENT]: PACKET_OFFSET: "
+                                                       + startOffset
+                                                       + " - END: "
+                                                       + (startOffset += sendPacket.getLength())
+                                                       + "\n");
             clientSocket.send(sendPacket);
-
         }catch(IOException io) {
             System.err.println("[CLIENT]: Error in sending packet");
         }
@@ -99,4 +126,5 @@ public class Client {
             x.printStackTrace();
         }
     }
+
 }
