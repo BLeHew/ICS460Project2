@@ -4,6 +4,7 @@ import java.net.*;
 import java.util.*;
 
 import generators.*;
+import packet.*;
 
 
 public class Client {
@@ -17,7 +18,7 @@ public class Client {
     private DatagramPacket sendPacket;
 
     //TODO allow user to determine the size of the window
-    private DatagramPacket[] window = new DatagramPacket[5];
+    private PacketWindow packetWindow = new PacketWindow(5);
 
     private PacketGenerator packetGenerator;
 
@@ -65,12 +66,15 @@ public class Client {
                 sendPacket.setAddress(IPAddress);
                 sendPacket.setPort(PORT);
 
-                sendClientPacket();
 
-                placePacketInWindow();
 
-                waitForResponsePacket();
-
+                if(!packetWindow.isFull()) {
+                     sendClientPacket();
+                     placePacketInWindow();
+                }
+                else {
+                    waitForResponsePacket();
+                }
 
 
                 packetNum++;
@@ -80,7 +84,7 @@ public class Client {
     }
 
     private void placePacketInWindow() {
-
+       packetWindow.add(sendPacket);
     }
     private void waitForResponsePacket() {
         try {
