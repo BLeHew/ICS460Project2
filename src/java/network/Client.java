@@ -65,9 +65,8 @@ public class Client {
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
                 sendPacket.setPort(PORT);
-
-
-
+                sendClientPacket();
+                /*
                 if(!packetWindow.isFull()) {
                      sendClientPacket();
                      packetWindow.add(sendPacket);
@@ -77,7 +76,7 @@ public class Client {
                     packetWindow.remove(responsePacket);
                 }
 
-
+                */
                 packetNum++;
             }
         clientSocket.close();

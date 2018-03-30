@@ -1,4 +1,6 @@
 package packet;
+import java.net.*;
+
 import helpers.*;
 
 public class Packet {
@@ -14,7 +16,7 @@ public class Packet {
     private int seqNo;
     private byte data[];
 
-    private PacketHeader packetHeader;
+    private PacketHeader header;
 
     //Two types of packets, this one is acknowledgement packet
     public Packet(int ackNo) {
@@ -33,8 +35,19 @@ public class Packet {
     public Packet() {}; // empty constructor
 
     public byte[] generateHeaderAsArrayOfBytes() {
-    	packetHeader = new PacketHeader(this);
-    	return packetHeader.getHeader();
+    	header = new PacketHeader(this);
+    	return header.getHeader();
+    }
+    //helper method to get the acknowledgement number from the given data packet
+    public static int getAckNo(DatagramPacket p) {
+        byte[] temp = new byte[4];
+
+        for(int i = 0; i < temp.length ; i++) {
+            temp[i] = p.getData()[i];
+        }
+
+        return Converter.toInt(temp);
+
     }
     /**
      * combines the data and header byte[]s and returns them as one byte[]
@@ -70,8 +83,8 @@ public class Packet {
 		this.ckSum = cksum;
 	}
 
-	public void setLen(byte len) {
-		this.len = len;
+	public void setLen(int length) {
+		this.len = (short)length;
 	}
 
 	public int getAckno() {

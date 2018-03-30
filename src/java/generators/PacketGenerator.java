@@ -7,7 +7,6 @@ import packet.*;
 
 public class PacketGenerator {
     private FileInputStream fileStreamIn;
-    private HeaderGenerator headerGen;
     private byte[] buffer;
     private int packetSize;
 
@@ -15,6 +14,7 @@ public class PacketGenerator {
     private int ackNo = 1;
 
     private Packet currentPacket;
+    private int fileSize;
 
     public PacketGenerator(FileInputStream fis, int packetSize) {
         this.packetSize = packetSize;
@@ -29,15 +29,34 @@ public class PacketGenerator {
 
     public DatagramPacket getPacketToSend() {
 
+        if(dataLeft() < packetSize) {
+            buffer = new byte[dataLeft()];
+            packetSize = dataLeft();
+        }
         readFileStreamIntoBuffer();
-
         //TODO set the acknowledgement number as well as sequence and checksum numbers
+        setPacketData();
 
-        currentPacket.setData(buffer);
-        currentPacket.setAckno(ackNo);
-        currentPacket.setSeqno(seqNo);
+        ackNo += currentPacket.getLen() + 1;
+        seqNo = ackNo;
+
         currentPacket.setCksum((byte) 0);
-        return new DatagramPacket(currentPacket.getPacketAsArrayOfBytes(),packetSize);
+
+        printCurrentPacket();
+
+        return new DatagramPacket(currentPacket.getPacketAsArrayOfBytes(),buffer.length);
+    }
+
+    private void setPacketData() {
+        currentPacket.setData(buffer);
+        currentPacket.setSeqno(seqNo);
+        currentPacket.setAckno(ackNo);
+        currentPacket.setLen(buffer.length);
+
+    }
+    private void printCurrentPacket() {
+        System.out.println("size: " + buffer.length);
+
     }
     /**
      *
@@ -52,7 +71,15 @@ public class PacketGenerator {
         }
         return value;
     }
-
+    public int dataLeft() {
+        int dataLeft = 0;
+        try {
+            dataLeft = fileStreamIn.available();
+        } catch ( IOException x ) {
+            x.printStackTrace();
+        }
+        return dataLeft;
+    }
     public int packetsLeft() {
         int numPacketsLeft = 0;
         try {
@@ -64,6 +91,7 @@ public class PacketGenerator {
     }
     private void readFileStreamIntoBuffer() {
         //Using 0 for the offset, since were already creating the header in the packet class
+
         try {
             fileStreamIn.read(buffer,0, packetSize);
         } catch ( IOException x ) {

@@ -1,7 +1,5 @@
 package helpers;
 
-import java.net.*;
-
 import packet.*;
 
 public class Converter {
@@ -28,13 +26,15 @@ public class Converter {
 
         return result;
     }
+    //convert the packet to its byte representation
     public static byte[] toBytes(Packet p) {
         byte[] header = p.generateHeaderAsArrayOfBytes();
         byte[] combined = new byte[header.length + p.getLen()];
         System.arraycopy(header,0,combined,0,header.length);
-        System.arraycopy(p.getData(),0,combined,header.length,p.getData().length);
+        System.arraycopy(p.getData(),0,combined,header.length,p.getLen());
         return combined;
     }
+    //convert the byte array to an integer.
     public static int toInt(byte[] array) {
         int temp = array[0];
             for ( int i = 1; i < array.length; i++ ) {
@@ -44,14 +44,5 @@ public class Converter {
             }
         return temp;
     }
-    public static int getAckNo(DatagramPacket p) {
-        byte[] temp = new byte[4];
 
-        for(int i = 0; i < temp.length ; i++) {
-            temp[i] = p.getData()[i];
-        }
-
-        return toInt(temp);
-
-    }
 }
