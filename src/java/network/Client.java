@@ -8,7 +8,6 @@ import packet.*;
 
 
 public class Client {
-    private final static int PORT = 9876;
     private static final String HOSTNAME = "localhost";
     private InetAddress IPAddress;
 
@@ -64,10 +63,17 @@ public class Client {
                 //get the next packet to be sent from the generator
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
+<<<<<<< HEAD
                 sendPacket.setPort(PORT);
                 //sendPacketFromClient();
 
 
+=======
+                sendPacket.setPort(Driver.CLIENTPROXYPORT);
+                sendPacketFromClient();
+                
+                /*
+>>>>>>> branch 'master' of https://github.com/BLeHew/ICS460Project2
                 if(!packetWindow.isFull()) {
                      sendPacketFromClient();
                      packetWindow.add(sendPacket);
@@ -85,8 +91,14 @@ public class Client {
 
     private void waitForResponsePacket() {
         try {
+<<<<<<< HEAD
                 responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
         		clientSocket.receive(responsePacket);
+=======
+        		responsePacket.setAddress(IPAddress);
+        		responsePacket.setPort(Driver.SERVERPORT);
+            clientSocket.receive(responsePacket);
+>>>>>>> branch 'master' of https://github.com/BLeHew/ICS460Project2
         } catch ( IOException x ) {
             x.printStackTrace();
         }
@@ -123,7 +135,7 @@ public class Client {
     }
     private void createSocket() {
         try {
-            clientSocket = new DatagramSocket();
+            clientSocket = new DatagramSocket(Driver.CLIENTPORT);
             System.out.println("[CLIENT] Client socket started on port: " + clientSocket.getLocalPort());
         }catch ( SocketException x ) {
         System.err.println("[CLIENT} Problem on creating client socket.");

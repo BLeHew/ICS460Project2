@@ -11,8 +11,7 @@ import java.util.Random;
 
 
 public class Proxy {
-	private final static int PORTSERVER = 9876;
-	private final static int PORTCLIENT = 9877;
+	
     private static final String HOSTNAME = "localhost";
 
     private InetAddress IPAddress;
@@ -58,10 +57,13 @@ public class Proxy {
 	    		proxyToServerPacket = clientToProxyPacket;
             	
 			// send to server logic
+	    		assignIPAddress();
 	    		proxyToServerPacket.setAddress(IPAddress);
-	    		proxyToServerPacket.setPort(PORTSERVER);
+	    		proxyToServerPacket.setPort(Driver.SERVERPORT);
 	    		try {
+	    			System.out.println("[PROXY] About to send packet to server");
 				serverProxySocket.send(proxyToServerPacket);
+    				System.out.println("[PROXY] SENT packet to server");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -95,7 +97,7 @@ public class Proxy {
 	 */
     	private void createClientProxySocket() {
         try {
-        		clientProxySocket = new DatagramSocket();
+        		clientProxySocket = new DatagramSocket(Driver.CLIENTPROXYPORT);
             System.out.println("[PROXY] Client-Proxy socket started on port: " + clientProxySocket.getLocalPort());
         } catch ( SocketException x ) {
             System.err.println("[PROXY] Problem on creating client - proxy socket.");
@@ -105,7 +107,7 @@ public class Proxy {
     
     private void createServerProxySocket() {
         try {
-        		serverProxySocket = new DatagramSocket();
+        		serverProxySocket = new DatagramSocket(Driver.SERVERPROXYPORT);
             System.out.println("[PROXY] Server-Proxy socket started on port: " + serverProxySocket.getLocalPort());
         } catch ( SocketException x ) {
             System.err.println("[PROXY] Problem on creating server - proxy socket.");

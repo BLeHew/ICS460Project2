@@ -2,6 +2,13 @@ package network;
 import java.util.*;
 
 public class Driver {
+	//------------- public map for all nodes on network----
+	public final static int CLIENTPORT = 9875;
+    public final static int SERVERPORT = 9876;
+	public final static int SERVERPROXYPORT = 9877;
+	public final static int CLIENTPROXYPORT = 9878;
+    //--------------end of network map --------------------
+
     static Scanner clientOrServerInput = new Scanner(System.in);
     static String cliOrServ;
 
@@ -9,7 +16,7 @@ public class Driver {
        // clientOrServerMethod();
        Client client = new Client();
        Server server = new Server();
-       //Proxy proxy = new Proxy();
+       Proxy proxy = new Proxy();
     }
     // TODO exception handling
 

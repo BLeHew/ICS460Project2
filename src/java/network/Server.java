@@ -3,7 +3,7 @@ import java.io.*;
 import java.net.*;
 
 public class Server {
-	private final static int PORT = 9876;
+
 	private DatagramSocket serverSocket;
 	private DatagramPacket request;
 
@@ -25,8 +25,8 @@ public class Server {
 	       t.start();
 	}
 	private void runWork() {
-	    createServerSocket(PORT);
-        createFileStreamOut("receiveFile.jpg");
+	    createServerSocket(Driver.SERVERPORT);
+        createFileStreamOut("receiveFile.txt");
         while (true) {
                 request = new DatagramPacket(receiveData, receiveData.length);
                 receivePacketIntoSocket();
