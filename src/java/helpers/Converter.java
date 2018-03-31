@@ -35,14 +35,12 @@ public class Converter {
         return combined;
     }
     //convert the byte array to an integer.
+    //source : https://stackoverflow.com/questions/5399798/byte-array-and-int-conversion-in-java
     public static int toInt(byte[] array) {
-        int temp = array[0];
-            for ( int i = 1; i < array.length; i++ ) {
-                temp = temp << 8;
-                temp = temp | array[i];
-
-            }
-        return temp;
+        return   array[3] & 0xFF |
+            (array[2] & 0xFF) << 8 |
+            (array[1] & 0xFF) << 16 |
+            (array[0] & 0xFF) << 24;
     }
 
 }

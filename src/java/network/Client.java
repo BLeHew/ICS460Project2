@@ -14,7 +14,7 @@ public class Client {
 
     private DatagramSocket clientSocket;
     private DatagramPacket responsePacket; //response from server
-    private DatagramPacket sendPacket; // packet to send to server 
+    private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
     private PacketWindow packetWindow = new PacketWindow(5);
@@ -26,6 +26,7 @@ public class Client {
     private int packetNum = 0;
     private int totalPackets;
     private int startOffset = 0;
+    private int packetSize;
 
     private FileInputStream fileStreamIn;
 
@@ -52,29 +53,30 @@ public class Client {
         while(!createFileStream(inFromUser.nextLine()));
 
         //TODO allow user to designate the size of the packets to be sent
-        int packetSize = 500;
+        packetSize = 500;
 
         packetGenerator = new PacketGenerator(fileStreamIn, packetSize);
 
         totalPackets = packetGenerator.packetsLeft(); //get number of packets to send
 
         while(packetGenerator.hasMoreData()) {
+
                 //get the next packet to be sent from the generator
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
                 sendPacket.setPort(PORT);
-                sendPacketFromClient();
-                
-                /*
+                //sendPacketFromClient();
+
+
                 if(!packetWindow.isFull()) {
-                     sendClientPacket();
+                     sendPacketFromClient();
                      packetWindow.add(sendPacket);
                 }
                 else {
                     waitForResponsePacket();
                     packetWindow.remove(responsePacket);
                 }
-                */
+
                 packetNum++;
             }
         clientSocket.close();
@@ -83,15 +85,14 @@ public class Client {
 
     private void waitForResponsePacket() {
         try {
-        		responsePacket.setAddress(IPAddress);
-        		responsePacket.setPort(PORT);
-            clientSocket.receive(responsePacket);
+                responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
+        		clientSocket.receive(responsePacket);
         } catch ( IOException x ) {
             x.printStackTrace();
         }
 
     }
-    private void sendPacketFromClient() {    		
+    private void sendPacketFromClient() {
         try {
             System.out.println("[CLIENT]: [SENDING]: " + packetNum + "/" + totalPackets);
             System.out.println("[CLIENT]: PACKET_OFFSET: "

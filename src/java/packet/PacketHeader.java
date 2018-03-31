@@ -8,7 +8,7 @@ public class PacketHeader {
 
     //Generates a header using the given packet
     public PacketHeader(Packet packet) {
-        data = new byte[Packet.PACKETHEADERSIZE];
+        data = new byte[Packet.DATAPACKETHEADERSIZE];
         this.packet = packet;
 
         addCheckSum();

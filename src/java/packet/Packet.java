@@ -9,7 +9,8 @@ public class Packet {
     public static final short CHECKSUMGOOD = 0;
     public static final short CHECKSUMBAD = 1;
 
-    public static final int PACKETHEADERSIZE = 12;
+    public static final int DATAPACKETHEADERSIZE = 12;
+    public static final int ACKPACKETHEADERSIZE = 8;
 	private short ckSum;
     private short len;
     private int ackNo;
@@ -20,17 +21,19 @@ public class Packet {
 
     //Two types of packets, this one is acknowledgement packet
     public Packet(int ackNo) {
+            //also has checksum
     		this.ackNo = ackNo % 64;
-    		this.len = 8;
+    		this.len = ACKPACKETHEADERSIZE;
     }
     //this is a data packet
     public Packet(int ackNo, int seqNo, byte[] data) {
+        //also has checksum
         this.ackNo = ackNo;
         this.seqNo = seqNo;
         this.data = data;
 
         //data packet length will be the size of the data + 12 bytes for the header
-        this.len = (short) (data.length + PACKETHEADERSIZE);
+        this.len = (short) (data.length + DATAPACKETHEADERSIZE);
     }
     public Packet() {}; // empty constructor
 
@@ -39,15 +42,39 @@ public class Packet {
     	return header.getHeader();
     }
     //helper method to get the acknowledgement number from the given data packet
-    public static int getAckNo(DatagramPacket p) {
+    public static int getSeqNo(DatagramPacket p) {
         byte[] temp = new byte[4];
 
+        int j = 8;
         for(int i = 0; i < temp.length ; i++) {
-            temp[i] = p.getData()[i];
+            temp[i] = p.getData()[j];
+            j++;
         }
 
         return Converter.toInt(temp);
 
+    }
+    //helper method to get the sequence number from the given data packet
+    public static int getAckNo(DatagramPacket p) {
+        byte[] temp = new byte[4];
+
+        int j = 4;
+        for(int i = 0; i < temp.length ; i++) {
+            temp[i] = p.getData()[j];
+            j++;
+        }
+
+        return Converter.toInt(temp);
+
+    }
+  //helper method to get the ckSum number from the given data packet
+    public static short getCkSum(DatagramPacket p) {
+        byte[] temp = new byte[2];
+
+        for(int i = 0; i < temp.length ; i++) {
+            temp[i] = p.getData()[i];
+        }
+        return (short)Converter.toInt(temp);
     }
     /**
      * combines the data and header byte[]s and returns them as one byte[]
@@ -79,8 +106,8 @@ public class Packet {
 		return ckSum;
 	}
 
-	public void setCksum(byte cksum) {
-		this.ckSum = cksum;
+	public void setCksum(int ckSum) {
+		this.ckSum = (short) ckSum;
 	}
 
 	public void setLen(int length) {
@@ -117,26 +144,8 @@ public class Packet {
     public int getLen() {
         return len;
     }
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ackNo;
-        return result;
-    }
-    @Override
-    public boolean equals(Object obj) {
-        if ( this == obj )
-            return true;
-        if ( obj == null )
-            return false;
-        if ( getClass() != obj.getClass() )
-            return false;
-        Packet other = (Packet) obj;
-        if ( ackNo != other.ackNo )
-            return false;
-        return true;
-    }
+
+
 
 
 }

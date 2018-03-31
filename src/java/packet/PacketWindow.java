@@ -37,4 +37,10 @@ public class PacketWindow {
             }
         }
     }
+    public void print() {
+        for(DatagramPacket p : packets) {
+            System.out.println("Packet ackNo: " + Packet.getAckNo(p));
+            System.out.println("Packet seqNo: " + Packet.getSeqNo(p) + "\n");
+        }
+    }
 }
