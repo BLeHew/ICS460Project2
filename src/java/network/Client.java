@@ -8,7 +8,6 @@ import packet.*;
 
 
 public class Client {
-    private final static int PORT = 9876;
     private static final String HOSTNAME = "localhost";
     private InetAddress IPAddress;
 
@@ -62,7 +61,7 @@ public class Client {
                 //get the next packet to be sent from the generator
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
-                sendPacket.setPort(PORT);
+                sendPacket.setPort(Driver.CLIENTPROXYPORT);
                 sendPacketFromClient();
                 
                 /*
@@ -84,7 +83,7 @@ public class Client {
     private void waitForResponsePacket() {
         try {
         		responsePacket.setAddress(IPAddress);
-        		responsePacket.setPort(PORT);
+        		responsePacket.setPort(Driver.SERVERPORT);
             clientSocket.receive(responsePacket);
         } catch ( IOException x ) {
             x.printStackTrace();
@@ -122,7 +121,7 @@ public class Client {
     }
     private void createSocket() {
         try {
-            clientSocket = new DatagramSocket();
+            clientSocket = new DatagramSocket(Driver.CLIENTPORT);
             System.out.println("[CLIENT] Client socket started on port: " + clientSocket.getLocalPort());
         }catch ( SocketException x ) {
         System.err.println("[CLIENT} Problem on creating client socket.");
