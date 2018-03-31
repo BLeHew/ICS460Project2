@@ -27,8 +27,6 @@ public class Server {
 	private void runWork() {
 	    createServerSocket(PORT);
         createFileStreamOut("receiveFile.jpg");
-
-
         while (true) {
                 request = new DatagramPacket(receiveData, receiveData.length);
                 receivePacketIntoSocket();
@@ -43,11 +41,11 @@ public class Server {
         }
     }
     private void respondNegative() {
-		// TODO Auto-generated method stub
+		
 
 	}
 	private void respondPositive() {
-		// TODO Auto-generated method stub
+		
 
 	}
 	private boolean verifyPacket() {
@@ -77,7 +75,7 @@ public class Server {
         try {
             serverSocket.receive(request);
         } catch ( IOException x ) {
-            System.err.println("Error receiving packet into socket.");
+            System.err.println("[SERVER] Error receiving packet into socket.");
             x.printStackTrace();
         }
     }
@@ -98,7 +96,7 @@ public class Server {
     private void createServerSocket(int port) {
         try {
             serverSocket = new DatagramSocket(port);
-            System.out.println("Server Started on port: " + PORT);
+            System.out.println("[SERVER] Server socket started on port: " + serverSocket.getLocalPort());
         } catch ( SocketException x ) {
             System.err.println("Problem on creating server socket.");
             x.printStackTrace();

@@ -13,9 +13,8 @@ public class Client {
     private InetAddress IPAddress;
 
     private DatagramSocket clientSocket;
-
-    private DatagramPacket responsePacket;
-    private DatagramPacket sendPacket;
+    private DatagramPacket responsePacket; //response from server
+    private DatagramPacket sendPacket; // packet to send to server 
 
     //TODO allow user to determine the size of the window
     private PacketWindow packetWindow = new PacketWindow(5);
@@ -60,12 +59,12 @@ public class Client {
         totalPackets = packetGenerator.packetsLeft(); //get number of packets to send
 
         while(packetGenerator.hasMoreData()) {
-
                 //get the next packet to be sent from the generator
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
                 sendPacket.setPort(PORT);
-                sendClientPacket();
+                sendPacketFromClient();
+                
                 /*
                 if(!packetWindow.isFull()) {
                      sendClientPacket();
@@ -75,7 +74,6 @@ public class Client {
                     waitForResponsePacket();
                     packetWindow.remove(responsePacket);
                 }
-
                 */
                 packetNum++;
             }
@@ -85,13 +83,15 @@ public class Client {
 
     private void waitForResponsePacket() {
         try {
+        		responsePacket.setAddress(IPAddress);
+        		responsePacket.setPort(PORT);
             clientSocket.receive(responsePacket);
         } catch ( IOException x ) {
             x.printStackTrace();
         }
 
     }
-    private void sendClientPacket() {
+    private void sendPacketFromClient() {    		
         try {
             System.out.println("[CLIENT]: [SENDING]: " + packetNum + "/" + totalPackets);
             System.out.println("[CLIENT]: PACKET_OFFSET: "
@@ -123,9 +123,11 @@ public class Client {
     private void createSocket() {
         try {
             clientSocket = new DatagramSocket();
-        } catch ( SocketException x ) {
-            x.printStackTrace();
-        }
+            System.out.println("[CLIENT] Client socket started on port: " + clientSocket.getLocalPort());
+        }catch ( SocketException x ) {
+        System.err.println("[CLIENT} Problem on creating client socket.");
+        x.printStackTrace();
+    }
     }
 
 }
