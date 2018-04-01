@@ -38,7 +38,7 @@ public class Server {
             receivePacketIntoSocket();
 
             if (verifyPacket()) {
-                System.out.println("Packet is good.");
+                System.out.println("[SERVER] Packet is verified.");
             		printPacketInfo();
             		packetNumber++;
             		writeDataToStream(receiveData, 0);
@@ -48,9 +48,9 @@ public class Server {
 	}
 	private void respondPositive() {
 	    response = packetGenerator.getAckPacket(request);
-
-	    System.out.println("[SERVER]Request address: " + request.getAddress());
-	    System.out.println("Request port: "  + request.getPort());
+	    System.out.println("[SERVER] responding positive");
+//	    System.out.println("[SERVER] Request address: " + request.getAddress());
+//	    System.out.println("[SERVER] Request port: "  + request.getPort());
 	    response.setAddress(request.getAddress());
 	    response.setPort(Driver.SERVERPROXYPORT);
 
@@ -62,7 +62,8 @@ public class Server {
 	}
 	private boolean verifyPacket() {
 			boolean retval = PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
-			System.out.println("CHECKSUM IS GOOD?: " + retval );
+			System.out.println("[SERVER] CHECKSUM IS GOOD?: " + retval );
+			System.out.println("[SERVER] Regardless we return true");
 			//return retval;
 			return true;
 	}
@@ -99,7 +100,7 @@ public class Server {
         try {
             fileStreamOut = new FileOutputStream(fileOutName);
         } catch ( FileNotFoundException x ) {
-            System.err.println("Problem on creating output stream.");
+            System.err.println("[SERVER] Problem on creating output stream.");
             x.printStackTrace();
         }
     }
@@ -113,7 +114,7 @@ public class Server {
             serverSocket = new DatagramSocket(port);
             System.out.println("[SERVER] Server socket started on port: " + serverSocket.getLocalPort());
         } catch ( SocketException x ) {
-            System.err.println("Problem on creating server socket.");
+            System.err.println("[SERVER] Problem on creating server socket.");
             x.printStackTrace();
         }
     }

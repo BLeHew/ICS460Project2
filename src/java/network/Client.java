@@ -61,7 +61,7 @@ public class Client {
 
         while(packetGenerator.hasMoreData()) {
             //get the next packet to be sent from the generator
-            for(int i = 0; i < 5; i++) {
+           // for(int i = 0; i < 5; i++) {
 
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
@@ -76,8 +76,8 @@ public class Client {
                     packetWindow.remove(responsePacket);
                 }
                 packetNum++;
-            }
-        }
+           // }
+       	}
         clientSocket.close();
         System.out.println("[CLIENT] Client socket closed");
     }
