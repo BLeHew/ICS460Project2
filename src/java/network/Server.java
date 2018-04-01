@@ -61,7 +61,9 @@ public class Server {
         }
 	}
 	private boolean verifyPacket() {
-    		//return PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
+			boolean retval = PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
+			System.out.println("CHECKSUM IS GOOD?: " + retval );
+			//return retval;
 			return true;
 	}
 	private void printPacketInfo() {
