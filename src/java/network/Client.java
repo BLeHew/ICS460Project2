@@ -43,7 +43,7 @@ public class Client {
     }
     private void runWork() {
 
-        createSocket();
+        createSocket(Driver.CLIENTPORT);
         assignIPAddress();
 
         System.out.println("Relative filepath to file you want client to send to server?");
@@ -59,44 +59,39 @@ public class Client {
         totalPackets = packetGenerator.packetsLeft(); //get number of packets to send
 
 
-       // while(packetGenerator.hasMoreData()) {
-                //get the next packet to be sent from the generator
-                for(int i = 0; i < 5; i++) {
+        while(packetGenerator.hasMoreData()) {
+            //get the next packet to be sent from the generator
+            for(int i = 0; i < 5; i++) {
 
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
-                sendPacket.setPort(Driver.SERVERPORT);
-
-                //sendPacket.setPort(Driver.CLIENTPROXYPORT);
+                sendPacket.setPort(Driver.CLIENTPROXYPORT);
 
                 if(!packetWindow.isFull()) {
-                     sendPacketFromClient();
+                     sendPacketFromClient(sendPacket);
                      packetWindow.add(sendPacket);
                 }
-
                 else {
                     waitForResponsePacket();
                     packetWindow.remove(responsePacket);
                 }
-
                 packetNum++;
             }
+        }
         clientSocket.close();
-
+        System.out.println("[CLIENT] Client socket closed");
     }
 
     private void waitForResponsePacket() {
         try {
-                responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
+            	responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
         		clientSocket.receive(responsePacket);
-        		System.out.println("Ack packet received with ack of: " + PacketData.getAckNo(responsePacket));
-
+        		System.out.println("[CLIENT] Ack packet received with ack of: " + PacketData.getAckNo(responsePacket));
         } catch ( IOException x ) {
             x.printStackTrace();
         }
-
     }
-    private void sendPacketFromClient() {
+    private void sendPacketFromClient(DatagramPacket packetToSend) {
         try {
 
             System.out.println("[CLIENT]: [SENDING]: " + packetNum + "/" + totalPackets);
@@ -106,7 +101,7 @@ public class Client {
                                                        + (startOffset += sendPacket.getLength())
                                                        + "\n");
 
-            clientSocket.send(sendPacket);
+            clientSocket.send(packetToSend);
         }catch(IOException io) {
             System.err.println("[CLIENT]: Error in sending packet");
         }
@@ -128,10 +123,9 @@ public class Client {
             x.printStackTrace();
         }
     }
-    private void createSocket() {
+    private void createSocket(int port) {
         try {
-            clientSocket = new DatagramSocket();
-            //clientSocket = new DatagramSocket(Driver.CLIENTPORT);
+            clientSocket = new DatagramSocket(port);
             System.out.println("[CLIENT] Client socket started on port: " + clientSocket.getLocalPort());
         }catch ( SocketException x ) {
         System.err.println("[CLIENT} Problem on creating client socket.");

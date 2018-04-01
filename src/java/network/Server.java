@@ -6,7 +6,8 @@ import generators.*;
 import packet.*;
 
 public class Server {
-    private final static int PORT = 9876;
+    private static final String HOSTNAME = "localhost";
+    private InetAddress IPAddress;
 	private DatagramSocket serverSocket;
 	private DatagramPacket request;
 	private DatagramPacket response;
@@ -15,7 +16,6 @@ public class Server {
 	private int startOffset = 0;
 	private FileOutputStream fileStreamOut;
 	private PacketGenerator packetGenerator;
-
 	private byte[] receiveData = new byte[500];
 
 	public Server() {
@@ -28,38 +28,31 @@ public class Server {
 	       Thread t = new Thread(r);
 	       t.setName("Server");
 	       t.start();
-	}
+	} 
 	private void runWork() {
-	    createServerSocket(PORT);
+	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
-
         packetGenerator = new PacketGenerator(receiveData.length);
-
-
         while (true) {
+            request = new DatagramPacket(receiveData, receiveData.length);
+            receivePacketIntoSocket();
 
-                request = new DatagramPacket(receiveData, receiveData.length);
-
-                receivePacketIntoSocket();
-
-
-
-                if (verifyPacket()) {
-                    System.out.println("Packet is good.");
-                		respondPositive();
-                		printPacketInfo();
-                		packetNumber++;
-                		writeDataToStream();
-                }
+            if (verifyPacket()) {
+                System.out.println("Packet is good.");
+            		printPacketInfo();
+            		packetNumber++;
+            		writeDataToStream(receiveData, 0);
+            		respondPositive();
+            }
         }
 	}
 	private void respondPositive() {
 	    response = packetGenerator.getAckPacket(request);
 
-	    System.out.println("Request address: " + request.getAddress());
+	    System.out.println("[SERVER]Request address: " + request.getAddress());
 	    System.out.println("Request port: "  + request.getPort());
 	    response.setAddress(request.getAddress());
-	    response.setPort(request.getPort());
+	    response.setPort(Driver.SERVERPROXYPORT);
 
 	    try {
             serverSocket.send(response);
@@ -68,7 +61,8 @@ public class Server {
         }
 	}
 	private boolean verifyPacket() {
-    		return PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
+    		//return PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
+			return true;
 	}
 	private void printPacketInfo() {
         System.out.println("\n[SERVER]: PACKET RECEIVED. INFO: \n"
@@ -83,9 +77,9 @@ public class Server {
             + "\n"
             );
     }
-    private void writeDataToStream() {
+    private void writeDataToStream(byte[] recData, int offset) {
         try {
-            fileStreamOut.write(receiveData, 0, receiveData.length);
+            fileStreamOut.write(recData, 0, recData.length);
         } catch ( IOException x ) {
             x.printStackTrace();
         }

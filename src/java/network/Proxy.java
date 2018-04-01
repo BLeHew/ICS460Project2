@@ -10,7 +10,6 @@ import packet.*;
 public class Proxy {
 
     private static final String HOSTNAME = "localhost";
-
     private InetAddress IPAddress;
 
 	private DatagramSocket clientProxySocket;
@@ -20,11 +19,6 @@ public class Proxy {
 	private DatagramPacket proxyToServerPacket;
 	private DatagramPacket proxyToClientPacket;
 	private DatagramPacket serverToProxyPacket;
-
-	private int packetNumber = 0;
-	private int startOffset = 0;
-	private FileOutputStream fileStreamOut;
-
 
 	private byte[] receiveData = new byte[500];
 
@@ -42,13 +36,12 @@ public class Proxy {
 	private void runWork() {
 	    createServerProxySocket();
 	    createClientProxySocket();
-
+// while true, manage two way street between client and server. 
         while (true) {
         	//ClientToServer
         		// receive from client logic
             clientToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
             receivePacketIntoSocket(clientToProxyPacket);
-            	packetNumber++;
 
             	//now get it ready to send to server.
 	    		proxyToServerPacket = clientToProxyPacket;
@@ -66,9 +59,10 @@ public class Proxy {
 				e.printStackTrace();
 			}
 
+    		// Server to Client response 
    			serverToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
             receivePacketIntoSocket(serverToProxyPacket);
-            	packetNumber++;
+            	System.out.println("[PROXY] received packet from server");
 
             	//now get it ready to send to client.
 	    		proxyToClientPacket = serverToProxyPacket;
@@ -78,6 +72,8 @@ public class Proxy {
 	    		proxyToClientPacket.setPort(Driver.CLIENTPORT);
 	    		try {
 				clientProxySocket.send(proxyToClientPacket);
+            	System.out.println("[PROXY] sent packet to client");
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
