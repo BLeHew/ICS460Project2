@@ -35,9 +35,8 @@ public class PacketGenerator {
         }
         readFileStreamIntoBuffer();
         packet.setData(buffer);
-
-
         packet.setSeqno(seqNo);
+
         System.out.println("Set: " + seqNo + " as the seqNo");
 
         ackNo += packetSize + Packet.DATAPACKETHEADERSIZE;

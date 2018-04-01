@@ -27,6 +27,7 @@ public class Server {
 	private void runWork() {
 	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
+
         while (true) {
                 request = new DatagramPacket(receiveData, receiveData.length);
                 receivePacketIntoSocket();
@@ -41,11 +42,11 @@ public class Server {
         }
     }
     private void respondNegative() {
-		
+
 
 	}
 	private void respondPositive() {
-		
+
 
 	}
 	private boolean verifyPacket() {

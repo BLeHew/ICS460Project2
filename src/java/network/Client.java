@@ -9,6 +9,7 @@ import packet.*;
 
 public class Client {
     private static final String HOSTNAME = "localhost";
+    private static final int PORT = 8000;
     private InetAddress IPAddress;
 
     private DatagramSocket clientSocket;
@@ -63,17 +64,13 @@ public class Client {
                 //get the next packet to be sent from the generator
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
-<<<<<<< HEAD
+
                 sendPacket.setPort(PORT);
                 //sendPacketFromClient();
 
-
-=======
                 sendPacket.setPort(Driver.CLIENTPROXYPORT);
                 sendPacketFromClient();
-                
-                /*
->>>>>>> branch 'master' of https://github.com/BLeHew/ICS460Project2
+
                 if(!packetWindow.isFull()) {
                      sendPacketFromClient();
                      packetWindow.add(sendPacket);
@@ -91,14 +88,14 @@ public class Client {
 
     private void waitForResponsePacket() {
         try {
-<<<<<<< HEAD
                 responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
         		clientSocket.receive(responsePacket);
-=======
+
         		responsePacket.setAddress(IPAddress);
+
         		responsePacket.setPort(Driver.SERVERPORT);
             clientSocket.receive(responsePacket);
->>>>>>> branch 'master' of https://github.com/BLeHew/ICS460Project2
+
         } catch ( IOException x ) {
             x.printStackTrace();
         }
