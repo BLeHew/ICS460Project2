@@ -2,15 +2,19 @@ package network;
 import java.io.*;
 import java.net.*;
 
-public class Server {
+import generators.*;
+import packet.*;
 
+public class Server {
+    private final static int PORT = 9876;
 	private DatagramSocket serverSocket;
 	private DatagramPacket request;
+	private DatagramPacket response;
 
 	private int packetNumber = 0;
 	private int startOffset = 0;
 	private FileOutputStream fileStreamOut;
-
+	private PacketGenerator packetGenerator;
 
 	private byte[] receiveData = new byte[500];
 
@@ -22,35 +26,49 @@ public class Server {
 	           }
 	       };
 	       Thread t = new Thread(r);
+	       t.setName("Server");
 	       t.start();
 	}
 	private void runWork() {
-	    createServerSocket(Driver.SERVERPORT);
+	    createServerSocket(PORT);
         createFileStreamOut("receiveFile.txt");
 
+        packetGenerator = new PacketGenerator(receiveData.length);
+
+
         while (true) {
+
                 request = new DatagramPacket(receiveData, receiveData.length);
+
                 receivePacketIntoSocket();
+
+
+
                 if (verifyPacket()) {
+                    System.out.println("Packet is good.");
                 		respondPositive();
                 		printPacketInfo();
                 		packetNumber++;
                 		writeDataToStream();
-                }else {
-                		respondNegative();
                 }
         }
-    }
-    private void respondNegative() {
-
-
 	}
 	private void respondPositive() {
+	    response = packetGenerator.getAckPacket(request);
 
+	    System.out.println("Request address: " + request.getAddress());
+	    System.out.println("Request port: "  + request.getPort());
+	    response.setAddress(request.getAddress());
+	    response.setPort(request.getPort());
 
+	    try {
+            serverSocket.send(response);
+        } catch ( IOException x ) {
+            x.printStackTrace();
+        }
 	}
 	private boolean verifyPacket() {
-    		return true;
+    		return PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
 	}
 	private void printPacketInfo() {
         System.out.println("\n[SERVER]: PACKET RECEIVED. INFO: \n"

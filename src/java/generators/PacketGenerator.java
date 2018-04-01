@@ -25,6 +25,7 @@ public class PacketGenerator {
     public PacketGenerator(int packetSize) {
         this.packetSize = packetSize;
         buffer = new byte[packetSize];
+        packet = new Packet();
     }
 
     public DatagramPacket getPacketToSend() {
@@ -34,34 +35,30 @@ public class PacketGenerator {
             packetSize = dataLeft();
         }
         readFileStreamIntoBuffer();
-        packet.setData(buffer);
-        packet.setSeqno(seqNo);
 
-        System.out.println("Set: " + seqNo + " as the seqNo");
+       // System.out.println("Set: " + seqNo + " as the seqNo");
 
         ackNo += packetSize + Packet.DATAPACKETHEADERSIZE;
-
         seqNo += ackNo;
 
+        packet.setSeqno(seqNo);
         packet.setAckno(ackNo);
-        System.out.println("Set: " + ackNo + " as the ackNo");
+       // System.out.println("Set: " + ackNo + " as the ackNo");
 
         packet.setLen(buffer.length);
 
+        packet.setCksum(Packet.CHECKSUMBAD);
+        packet.setData(buffer);
 
-
-
-        packet.setCksum((byte) 0);
-
-        return new DatagramPacket(packet.getPacketAsArrayOfBytes(),buffer.length);
+        return new DatagramPacket(packet.getPacketAsArrayOfBytes(),buffer.length + Packet.DATAPACKETHEADERSIZE);
     }
     public DatagramPacket getResponsePacket(int size) {
         byte[] tempBuffer = new byte[size];
         return new DatagramPacket(tempBuffer,tempBuffer.length);
     }
     public DatagramPacket getAckPacket(DatagramPacket p) {
-        int otherAckNo = Packet.getAckNo(p);
-        short otherCkSum = Packet.getCkSum(p);
+        int otherAckNo = PacketData.getAckNo(p);
+        short otherCkSum = PacketData.getCkSum(p);
 
         packet.setCksum(otherCkSum);
         packet.setAckno(otherAckNo);

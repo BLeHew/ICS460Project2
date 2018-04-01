@@ -1,6 +1,4 @@
 package packet;
-import java.net.*;
-
 import helpers.*;
 
 public class Packet {
@@ -25,6 +23,7 @@ public class Packet {
     		this.ackNo = ackNo % 64;
     		this.len = ACKPACKETHEADERSIZE;
     }
+
     //this is a data packet
     public Packet(int ackNo, int seqNo, byte[] data) {
         //also has checksum
@@ -40,41 +39,6 @@ public class Packet {
     public byte[] generateHeaderAsArrayOfBytes() {
     	header = new PacketHeader(this);
     	return header.getHeader();
-    }
-    //helper method to get the acknowledgement number from the given data packet
-    public static int getSeqNo(DatagramPacket p) {
-        byte[] temp = new byte[4];
-
-        int j = 8;
-        for(int i = 0; i < temp.length ; i++) {
-            temp[i] = p.getData()[j];
-            j++;
-        }
-
-        return Converter.toInt(temp);
-
-    }
-    //helper method to get the sequence number from the given data packet
-    public static int getAckNo(DatagramPacket p) {
-        byte[] temp = new byte[4];
-
-        int j = 4;
-        for(int i = 0; i < temp.length ; i++) {
-            temp[i] = p.getData()[j];
-            j++;
-        }
-
-        return Converter.toInt(temp);
-
-    }
-  //helper method to get the ckSum number from the given data packet
-    public static short getCkSum(DatagramPacket p) {
-        byte[] temp = new byte[2];
-
-        for(int i = 0; i < temp.length ; i++) {
-            temp[i] = p.getData()[i];
-        }
-        return (short)Converter.toInt(temp);
     }
     /**
      * combines the data and header byte[]s and returns them as one byte[]
@@ -144,7 +108,6 @@ public class Packet {
     public int getLen() {
         return len;
     }
-
 
 
 

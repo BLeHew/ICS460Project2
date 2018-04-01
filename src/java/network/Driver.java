@@ -16,7 +16,9 @@ public class Driver {
        // clientOrServerMethod();
        Client client = new Client();
        Server server = new Server();
-       Proxy proxy = new Proxy();
+       //Proxy proxy = new Proxy();
+
+
     }
     // TODO exception handling
 

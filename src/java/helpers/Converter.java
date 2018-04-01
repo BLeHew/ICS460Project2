@@ -1,5 +1,7 @@
 package helpers;
 
+import java.nio.*;
+
 import packet.*;
 
 public class Converter {
@@ -29,11 +31,18 @@ public class Converter {
     //convert the packet to its byte representation
     public static byte[] toBytes(Packet p) {
         byte[] header = p.generateHeaderAsArrayOfBytes();
-        byte[] combined = new byte[header.length + p.getLen()];
-        System.arraycopy(header,0,combined,0,header.length);
-        System.arraycopy(p.getData(),0,combined,header.length,p.getLen());
-        return combined;
+
+        if(p.getData() == null) {
+            return header;
+        }
+        else {
+            byte[] combined = new byte[header.length + p.getLen()];
+            System.arraycopy(header,0,combined,0,header.length);
+            System.arraycopy(p.getData(),0,combined,header.length,p.getLen());
+            return combined;
+        }
     }
+
     //convert the byte array to an integer.
     //source : https://stackoverflow.com/questions/5399798/byte-array-and-int-conversion-in-java
     public static int toInt(byte[] array) {
@@ -41,6 +50,10 @@ public class Converter {
             (array[2] & 0xFF) << 8 |
             (array[1] & 0xFF) << 16 |
             (array[0] & 0xFF) << 24;
+    }
+    public static short toShort(byte[] array) {
+        ByteBuffer buffer = ByteBuffer.wrap(array);
+        return buffer.getShort();
     }
 
 }

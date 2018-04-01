@@ -1,21 +1,18 @@
 package network;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.Random;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+
+import packet.*;
 
 
 public class Proxy {
-	
+
     private static final String HOSTNAME = "localhost";
 
     private InetAddress IPAddress;
-    
+
 	private DatagramSocket clientProxySocket;
 	private DatagramSocket serverProxySocket;
 
@@ -45,17 +42,17 @@ public class Proxy {
 	private void runWork() {
 	    createServerProxySocket();
 	    createClientProxySocket();
-	    
-        while (true) {      	
+
+        while (true) {
         	//ClientToServer
-        		// receive from client logic 
+        		// receive from client logic
             clientToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
             receivePacketIntoSocket(clientToProxyPacket);
-            	packetNumber++;  
-        		
-            	//now get it ready to send to server. 
+            	packetNumber++;
+
+            	//now get it ready to send to server.
 	    		proxyToServerPacket = clientToProxyPacket;
-            	
+
 			// send to server logic
 	    		assignIPAddress();
 	    		proxyToServerPacket.setAddress(IPAddress);
@@ -68,25 +65,23 @@ public class Proxy {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	    		
-//    		//ServerToClientResponse
-//	    		// receive from server logic 
-//    			serverToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
-//            receivePacketIntoSocket(serverToProxyPacket);
-//            	packetNumber++;  
-//        		
-//            	//now get it ready to send to client. 
-//	    		proxyToClientPacket = serverToProxyPacket;
-//            	
-//			// send to client logic
-//	    		proxyToClientPacket.setAddress(IPAddress);
-//	    		proxyToClientPacket.setPort(PORTCLIENT);
-//	    		try {
-//				clientProxySocket.send(proxyToClientPacket);
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+
+   			serverToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
+            receivePacketIntoSocket(serverToProxyPacket);
+            	packetNumber++;
+
+            	//now get it ready to send to client.
+	    		proxyToClientPacket = serverToProxyPacket;
+
+			// send to client logic
+	    		proxyToClientPacket.setAddress(IPAddress);
+	    		proxyToClientPacket.setPort(Driver.CLIENTPORT);
+	    		try {
+				clientProxySocket.send(proxyToClientPacket);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
         }
     }
 
@@ -104,7 +99,7 @@ public class Proxy {
             x.printStackTrace();
         }
     	}
-    
+
     private void createServerProxySocket() {
         try {
         		serverProxySocket = new DatagramSocket(Driver.SERVERPROXYPORT);
@@ -114,7 +109,7 @@ public class Proxy {
             x.printStackTrace();
         }
     }
-    
+
     private void receivePacketIntoSocket(DatagramPacket packet) {
         try {
             System.out.println("[PROXY] about to try to receive packet");
@@ -125,7 +120,7 @@ public class Proxy {
             x.printStackTrace();
         }
     }
-    
+
     private void assignIPAddress() {
         try {
             IPAddress = InetAddress.getByName(HOSTNAME);
@@ -133,14 +128,14 @@ public class Proxy {
             x.printStackTrace();
         }
     }
-    
-    
+
+
     /*
      * BELOW HERE WE HAVE THE "FAULTY NETWORK" METHODS
      */
-    
+
     // for now interference is random.
-    // Implement user-controlled interference. 
+    // Implement user-controlled interference.
 	private DatagramPacket randomInterference(DatagramPacket packet) {
 		int rand1 = randomNumberGenerator();
 		int rand2 = randomNumberGenerator();
@@ -157,39 +152,40 @@ public class Proxy {
 		}
 		return packet;
 	}
-	
+
 	private DatagramPacket changeByteInPacket(DatagramPacket packet) {
-		byte[] data = packet.getData();	
+		byte[] data = packet.getData();
 		data[1]=(byte)(randomNumberGenerator());
 		packet.setData(data);
 		return packet;
 	}
-	
+
 	private DatagramPacket dropByteFromPacket(DatagramPacket packet) {
-		byte[] data = packet.getData();	
-		data[1] = (Byte) null;
+		byte[] data = new byte[packet.getData().length - 1];
+
+		PacketData.setCkSumBad(packet);
 		packet.setData(data);
 		return packet;
 	}
-	
+
 	private DatagramPacket makePacketLate(DatagramPacket packet) {
 		try {
 			Thread.sleep(5000);//5 seconds
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} 
+		}
 		return packet;
 	}
-	
+
 	private DatagramPacket makePacketDisappear(DatagramPacket packet){
 		return null;
 	}
 
-	//must generate 1 bit number. 
+	//must generate 1 bit number.
 	private int randomNumberGenerator() {
-		Random rand = new Random(); 
-		int value = rand.nextInt(9); 
+		Random rand = new Random();
+		int value = rand.nextInt(9);
 		return value;
 	}
 }
