@@ -7,15 +7,12 @@ public class Driver {
     public final static int SERVERPORT = 9876;
 	public final static int SERVERPROXYPORT = 9877;
 	public final static int CLIENTPROXYPORT = 9878;
-	public static int INTERFERENCEPERCENTAGE;
     //--------------end of network map --------------------
 
     static Scanner clientOrServerInput = new Scanner(System.in);
     static String cliOrServ;
 
     public static void main(String args[]) {
-        System.out.println("Enter 1-100 for percentage of interference ");
-        INTERFERENCEPERCENTAGE = clientOrServerInput.nextInt(); 
        // clientOrServerMethod();
        Client client = new Client();
        Server server = new Server();
