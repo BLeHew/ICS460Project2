@@ -9,7 +9,6 @@ import packet.*;
 
 public class Client {
     private static final String HOSTNAME = "localhost";
-    private static final int PORT = 8000;
     private InetAddress IPAddress;
 
     private DatagramSocket clientSocket;
@@ -65,8 +64,6 @@ public class Client {
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
 
-                sendPacket.setPort(PORT);
-                //sendPacketFromClient();
 
                 sendPacket.setPort(Driver.CLIENTPROXYPORT);
                 sendPacketFromClient();

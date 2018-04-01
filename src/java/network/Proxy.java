@@ -58,6 +58,7 @@ public class Proxy {
             	
 			// send to server logic
 	    		assignIPAddress();
+	    		//interfereWithPacket(proxyToServerPacket);
 	    		proxyToServerPacket.setAddress(IPAddress);
 	    		proxyToServerPacket.setPort(Driver.SERVERPORT);
 	    		try {
@@ -141,15 +142,15 @@ public class Proxy {
     
     // for now interference is random.
     // Implement user-controlled interference. 
-	private DatagramPacket randomInterference(DatagramPacket packet) {
-		int rand1 = randomNumberGenerator();
-		int rand2 = randomNumberGenerator();
-		if(rand1==rand2) {
-			 if(rand1<=2) {
+	private DatagramPacket interfereWithPacket(DatagramPacket packet) {
+		int rand1 = randomNumberGenerator(100);
+		int rand2 = randomNumberGenerator(10);
+		if(rand1 <= Driver.INTERFERENCEPERCENTAGE) {
+			 if(rand2<=2) {
 					packet = changeByteInPacket(packet);
-			 }else if (rand1 > 2 && rand1 <=5) {
+			 }else if (rand2 > 2 && rand2 <=5) {
 					packet = dropByteFromPacket(packet);
-			 }else if (rand1 > 5 && rand1 <=7){
+			 }else if (rand2 > 5 && rand2 <=7){
 					packet = makePacketDisappear(packet);
 			 }else {
 					packet = makePacketLate(packet);
@@ -158,16 +159,22 @@ public class Proxy {
 		return packet;
 	}
 	
+	//TODO make this change the checksum
 	private DatagramPacket changeByteInPacket(DatagramPacket packet) {
-		byte[] data = packet.getData();	
-		data[1]=(byte)(randomNumberGenerator());
+		byte[] data = packet.getData();
+		if (data[1] == 0) {
+			data[1] = 1;
+		}
+		else {
+			data[1] = 0;
+		}
 		packet.setData(data);
 		return packet;
 	}
 	
 	private DatagramPacket dropByteFromPacket(DatagramPacket packet) {
-		byte[] data = packet.getData();	
-		data[1] = (Byte) null;
+		byte[] data = packet.getData();
+		//data[1] = null;
 		packet.setData(data);
 		return packet;
 	}
@@ -187,9 +194,9 @@ public class Proxy {
 	}
 
 	//must generate 1 bit number. 
-	private int randomNumberGenerator() {
+	private int randomNumberGenerator(int percent) {
 		Random rand = new Random(); 
-		int value = rand.nextInt(9); 
+		int value = rand.nextInt(percent); 
 		return value;
 	}
 }
