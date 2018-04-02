@@ -36,52 +36,59 @@ public class Proxy {
 	private void runWork() {
 	    createServerProxySocket();
 	    createClientProxySocket();
-// while true, manage two way street between client and server. 
+	    
+	    // while true, manage two way street between client and server. 
         while (true) {
-        	//ClientToServer
-        		// receive from client logic
-            clientToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
-            receivePacketIntoSocket(clientToProxyPacket);
-
-            	//now get it ready to send to server.
-	    		proxyToServerPacket = clientToProxyPacket;
-
-			// send to server logic
-	    		assignIPAddress();
-	    		proxyToServerPacket.setAddress(IPAddress);
-	    		proxyToServerPacket.setPort(Driver.SERVERPORT);
-	    		try {
-	    			System.out.println("[PROXY] About to send packet to server");
-				serverProxySocket.send(proxyToServerPacket);
-    				System.out.println("[PROXY] SENT packet to server");
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-    		// Server to Client response 
-   			serverToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
-            receivePacketIntoSocket(serverToProxyPacket);
-            	System.out.println("[PROXY] received packet from server");
-
-            	//now get it ready to send to client.
-	    		proxyToClientPacket = serverToProxyPacket;
-
-			// send to client logic
-	    		proxyToClientPacket.setAddress(IPAddress);
-	    		proxyToClientPacket.setPort(Driver.CLIENTPORT);
-	    		try {
-				clientProxySocket.send(proxyToClientPacket);
-            	System.out.println("[PROXY] sent packet to client");
-
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+        	//we dont want either of these to bloc.. .we want it to go back and forth between the methods freely. 
+        		clientToServer();
+   			serverToClientResponse();
         }
     }
 
-	 /**
+	 private void clientToServer() {
+		// receive from client logic
+		 clientToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
+		 receivePacketIntoSocket(clientToProxyPacket);
+		 
+		 //now get it ready to send to server.
+		proxyToServerPacket = clientToProxyPacket;
+		//proxyToServerPacket = interference(clientToProxyPacket); TODO implement this line
+
+		// send to server logic
+		assignIPAddress();
+		proxyToServerPacket.setAddress(IPAddress);
+		proxyToServerPacket.setPort(Driver.SERVERPORT);
+		try {
+		System.out.println("[PROXY] About to send packet to server");
+		serverProxySocket.send(proxyToServerPacket);
+		System.out.println("[PROXY] SENT packet to server");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	private void serverToClientResponse() {
+		 serverToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
+		 receivePacketIntoSocket(serverToProxyPacket);
+		 System.out.println("[PROXY] received packet from server");
+
+		//now get it ready to send to client.
+		proxyToClientPacket = serverToProxyPacket;
+	
+		// send to client logic
+		proxyToClientPacket.setAddress(IPAddress);
+		proxyToClientPacket.setPort(Driver.CLIENTPORT);
+		
+		try {
+		clientProxySocket.send(proxyToClientPacket);
+		System.out.println("[PROXY] sent packet to client");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	/**
 	 * Creates a new proxy socket at the designated port
 	 * @param port
 	 * @throws SocketException if the port is unavailable
@@ -132,22 +139,29 @@ public class Proxy {
 
     // for now interference is random.
     // Implement user-controlled interference.
-	private DatagramPacket randomInterference(DatagramPacket packet) {
-		int rand1 = randomNumberGenerator();
-		int rand2 = randomNumberGenerator();
-		if(rand1==rand2) {
-			 if(rand1<=2) {
-					packet = changeByteInPacket(packet);
-			 }else if (rand1 > 2 && rand1 <=5) {
-					packet = dropByteFromPacket(packet);
-			 }else if (rand1 > 5 && rand1 <=7){
-					packet = makePacketDisappear(packet);
-			 }else {
-					packet = makePacketLate(packet);
-			 }
-		}
-		return packet;
+	private DatagramPacket interfere(DatagramPacket packet) {
+		int rand1 = randomNumberGenerator(100);
+		int rand2 = randomNumberGenerator(10);
+		if(rand1 <= Driver.INTERFERENCE_PERCENTAGE) {
+			 if(rand2<=2) {
+ 					packet = changeByteInPacket(packet);
+			 }else if (rand2 > 2 && rand2 <=5) {
+ 					packet = dropByteFromPacket(packet);
+			 }else if (rand2 > 5 && rand2 <=7){
+ 					packet = makePacketDisappear(packet);
+ 			 }else {
+ 					packet = makePacketLate(packet);
+ 			 }
+	 	}
+	 	return packet;
 	}
+	
+	//must generate 1 bit number. 
+	private int randomNumberGenerator(int percent) {
+ 		Random rand = new Random(); 
+		int value = rand.nextInt(percent); 
+ 		return value;
+ 	}	 	
 
 	private DatagramPacket changeByteInPacket(DatagramPacket packet) {
 		byte[] data = packet.getData();

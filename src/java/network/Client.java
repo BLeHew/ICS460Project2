@@ -45,7 +45,6 @@ public class Client {
 
         createSocket(Driver.CLIENTPORT);
         assignIPAddress();
-
         System.out.println("Relative filepath to file you want client to send to server?");
 
         //keep attempting to create fileStream from user input
@@ -53,11 +52,8 @@ public class Client {
 
         //TODO allow user to designate the size of the packets to be sent
         packetSize = 500;
-
         packetGenerator = new PacketGenerator(fileStreamIn, packetSize);
-
         totalPackets = packetGenerator.packetsLeft(); //get number of packets to send
-
 
         while(packetGenerator.hasMoreData()) {
             //get the next packet to be sent from the generator
@@ -73,6 +69,7 @@ public class Client {
                 }
                 else {
                     waitForResponsePacket();
+            			//System.out.println("[CLIENT] Waiting for response not working. So we pretend we waited and heard a response");
                     packetWindow.remove(responsePacket);
                 }
                 packetNum++;
@@ -81,7 +78,6 @@ public class Client {
         clientSocket.close();
         System.out.println("[CLIENT] Client socket closed");
     }
-
     private void waitForResponsePacket() {
         try {
             	responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
@@ -130,7 +126,6 @@ public class Client {
         }catch ( SocketException x ) {
         System.err.println("[CLIENT} Problem on creating client socket.");
         x.printStackTrace();
+        }
     }
-    }
-
 }

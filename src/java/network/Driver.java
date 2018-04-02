@@ -9,21 +9,28 @@ public class Driver {
 	public final static int CLIENTPROXYPORT = 9878; // for the proxy class
     //--------------end of network map --------------------
 
-    static Scanner clientOrServerInput = new Scanner(System.in);
+    static Scanner userInput = new Scanner(System.in);
     static String cliOrServ;
+    public static int INTERFERENCE_PERCENTAGE;
 
     public static void main(String args[]) {
        // clientOrServerMethod();
-       Client client = new Client();
-       Server server = new Server();
-       Proxy proxy = new Proxy();
+    		userEnterInterferencePercentage();
+    		Client client = new Client();
+    		Server server = new Server();
+    		Proxy proxy = new Proxy();
     }
-    // TODO exception handling
+    private static void userEnterInterferencePercentage() {
+	    	do {
+	    		System.out.println("Enter any int 1-100 percentage of packets to be intefered with: ");
+	    		INTERFERENCE_PERCENTAGE = userInput.nextInt();
+	    	}while(!(INTERFERENCE_PERCENTAGE >= 0) || !(INTERFERENCE_PERCENTAGE <= 100)) ;
+	}
 
     private static void clientOrServerMethod() {
         System.out.println("Enter 'client' to run client instance, or 'server' to run server instance. ");
         do {
-            cliOrServ = clientOrServerInput.nextLine().toLowerCase();
+            cliOrServ = userInput.nextLine().toLowerCase();
             switch (cliOrServ) {
                 case "client":
                     Client client = new Client();
