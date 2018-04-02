@@ -20,8 +20,8 @@ public class Driver {
        //Proxy proxy = new Proxy();
 
        // clientOrServerMethod();
-    		userEnterInterferencePercentage();
-    		Proxy proxy = new Proxy();
+    		//userEnterInterferencePercentage();
+    		//Proxy proxy = new Proxy();
     }
     private static void userEnterInterferencePercentage() {
 	    	do {

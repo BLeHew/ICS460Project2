@@ -16,7 +16,7 @@ public class Client {
     private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(1);
+    private PacketWindow packetWindow = new PacketWindow(5);
 
     private PacketGenerator packetGenerator;
 
@@ -101,8 +101,8 @@ public class Client {
             System.out.println("Client:  packet ACK: " + PacketData.getAckNo(sendPacket));
 
             clientSocket.send(sendPacket);
-            Proxy proxy = new Proxy();
-            clientSocket.send(proxy.interfere(packetToSend));
+            //Proxy proxy = new Proxy();
+            //clientSocket.send(proxy.interfere(packetToSend));
         }catch(IOException io) {
             System.err.println("[CLIENT]: Error in sending packet");
         }
