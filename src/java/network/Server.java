@@ -52,7 +52,8 @@ public class Server {
 //	    System.out.println("[SERVER] Request address: " + request.getAddress());
 //	    System.out.println("[SERVER] Request port: "  + request.getPort());
 	    response.setAddress(request.getAddress());
-	    response.setPort(Driver.SERVERPROXYPORT);
+	    response.setPort(Driver.CLIENTPORT);
+	   // response.setPort(Driver.SERVERPROXYPORT); TODO REIMPLEMENT PROXY RESPONSE
 
 	    try {
             serverSocket.send(response);

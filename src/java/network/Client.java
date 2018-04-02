@@ -16,7 +16,7 @@ public class Client {
     private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(5);
+    private PacketWindow packetWindow = new PacketWindow(1);
 
     private PacketGenerator packetGenerator;
 
@@ -56,12 +56,9 @@ public class Client {
         totalPackets = packetGenerator.packetsLeft(); //get number of packets to send
 
         while(packetGenerator.hasMoreData()) {
-            //get the next packet to be sent from the generator
-           // for(int i = 0; i < 5; i++) {
-
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
-                sendPacket.setPort(Driver.CLIENTPROXYPORT);
+                sendPacket.setPort(Driver.SERVERPORT);
 
                 if(!packetWindow.isFull()) {
                      sendPacketFromClient(sendPacket);
@@ -69,11 +66,9 @@ public class Client {
                 }
                 else {
                     waitForResponsePacket();
-            			//System.out.println("[CLIENT] Waiting for response not working. So we pretend we waited and heard a response");
                     packetWindow.remove(responsePacket);
                 }
                 packetNum++;
-           // }
        	}
         clientSocket.close();
         System.out.println("[CLIENT] Client socket closed");
@@ -96,8 +91,9 @@ public class Client {
                                                        + " - END: "
                                                        + (startOffset += sendPacket.getLength())
                                                        + "\n");
-
-            clientSocket.send(packetToSend);
+            
+            Proxy proxy = new Proxy();
+            clientSocket.send(proxy.interfere(packetToSend));
         }catch(IOException io) {
             System.err.println("[CLIENT]: Error in sending packet");
         }

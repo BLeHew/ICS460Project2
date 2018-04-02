@@ -5,8 +5,8 @@ public class Driver {
 	//------------- public map for all nodes on network----
 	public final static int CLIENTPORT = 9875;
     public final static int SERVERPORT = 9876;
-	public final static int SERVERPROXYPORT = 9877; //for the proxy class
-	public final static int CLIENTPROXYPORT = 9878; // for the proxy class
+//	public final static int SERVERPROXYPORT = 9877; //for the proxy class
+//	public final static int CLIENTPROXYPORT = 9878; // for the proxy class
     //--------------end of network map --------------------
 
     static Scanner userInput = new Scanner(System.in);
@@ -22,7 +22,7 @@ public class Driver {
     }
     private static void userEnterInterferencePercentage() {
 	    	do {
-	    		System.out.println("Enter any int 1-100 percentage of packets to be intefered with: ");
+	    		System.out.println("Enter any int 0-100 percentage of packets to be intefered with: ");
 	    		INTERFERENCE_PERCENTAGE = userInput.nextInt();
 	    	}while(!(INTERFERENCE_PERCENTAGE >= 0) || !(INTERFERENCE_PERCENTAGE <= 100)) ;
 	}
