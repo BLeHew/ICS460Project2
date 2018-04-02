@@ -53,7 +53,6 @@ public class Server {
 //	    System.out.println("[SERVER] Request port: "  + request.getPort());
 	    response.setAddress(request.getAddress());
 	    response.setPort(Driver.CLIENTPORT);
-	   // response.setPort(Driver.SERVERPROXYPORT); TODO REIMPLEMENT PROXY RESPONSE
 
 	    try {
             serverSocket.send(response);
@@ -64,9 +63,7 @@ public class Server {
 	private boolean verifyPacket() {
 			boolean retval = PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
 			System.out.println("[SERVER] CHECKSUM IS GOOD?: " + retval );
-			System.out.println("[SERVER] Regardless we return true");
-			//return retval;
-			return true;
+			return retval;
 	}
 	private void printPacketInfo() {
         System.out.println("\n[SERVER]: PACKET RECEIVED. INFO: \n"
