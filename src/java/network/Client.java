@@ -16,7 +16,7 @@ public class Client {
     private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(5);
+    private PacketWindow packetWindow = new PacketWindow(1);
 
     private PacketGenerator packetGenerator;
 
@@ -39,13 +39,10 @@ public class Client {
         Thread t = new Thread(r);
         t.setName("Client");
         t.start();
-
     }
     private void runWork() {
-
-        createSocket();
+        createSocket(Driver.CLIENTPORT);
         assignIPAddress();
-
         System.out.println("Relative filepath to file you want client to send to server?");
 
         //keep attempting to create fileStream from user input
@@ -53,45 +50,44 @@ public class Client {
 
         //TODO allow user to designate the size of the packets to be sent
         packetSize = 500;
-
         packetGenerator = new PacketGenerator(fileStreamIn, packetSize);
-
         totalPackets = packetGenerator.packetsLeft(); //get number of packets to send
 
 
         while(packetGenerator.hasMoreData()) {
-                //get the next packet to be sent from the generator
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
                 sendPacket.setPort(Driver.SERVERPORT);
 
-                //sendPacket.setPort(Driver.CLIENTPROXYPORT);
-
                 if(!packetWindow.isFull()) {
-                     sendPacketFromClient();
+                     sendPacketFromClient(sendPacket);
                      packetWindow.add(sendPacket);
                 }
                 else {
                     waitForResponsePacket();
                     packetWindow.remove(responsePacket);
                 }
-
                 packetNum++;
-            }
+        }
+        while (!packetWindow.isEmpty()) {
+        	 	waitForResponsePacket();
+        	 	packetWindow.remove(responsePacket);
+        }
         clientSocket.close();
-
+        System.out.println("[CLIENT] Client socket closed");
     }
-
     private void waitForResponsePacket() {
         try {
                 responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
         		clientSocket.receive(responsePacket);
+            	responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
+        		clientSocket.receive(responsePacket);
+        		System.out.println("[CLIENT] Ack packet received with ack of: " + PacketData.getAckNo(responsePacket));
         } catch ( IOException x ) {
             x.printStackTrace();
         }
-
     }
-    private void sendPacketFromClient() {
+    private void sendPacketFromClient(DatagramPacket packetToSend) {
         try {
 
             System.out.println("[CLIENT]: [SENDING]: " + packetNum + "/" + totalPackets);
@@ -100,13 +96,13 @@ public class Client {
                                                        + " - END: "
                                                        + (startOffset += sendPacket.getLength())
                                                        + "\n");
-
-
             System.out.println("Client:  packet port " + sendPacket.getPort());
             System.out.println("Client:  packet addr " + sendPacket.getAddress());
             System.out.println("Client:  packet ACK: " + PacketData.getAckNo(sendPacket));
 
             clientSocket.send(sendPacket);
+            Proxy proxy = new Proxy();
+            clientSocket.send(proxy.interfere(packetToSend));
         }catch(IOException io) {
             System.err.println("[CLIENT]: Error in sending packet");
         }
@@ -128,15 +124,14 @@ public class Client {
             x.printStackTrace();
         }
     }
-    private void createSocket() {
+    private void createSocket(int port) {
         try {
             //clientSocket = new DatagramSocket();
-            clientSocket = new DatagramSocket(Driver.CLIENTPORT);
+            clientSocket = new DatagramSocket(port);
             System.out.println("[CLIENT] Client socket started on port: " + clientSocket.getLocalPort());
         }catch ( SocketException x ) {
         System.err.println("[CLIENT} Problem on creating client socket.");
         x.printStackTrace();
+        }
     }
-    }
-
 }

@@ -6,7 +6,8 @@ import generators.*;
 import packet.*;
 
 public class Server {
-    private final static int PORT = 9876;
+    private static final String HOSTNAME = "localhost";
+    private InetAddress IPAddress;
 	private DatagramSocket serverSocket;
 	private DatagramPacket request;
 	private DatagramPacket response;
@@ -15,7 +16,6 @@ public class Server {
 	private int startOffset = 0;
 	private FileOutputStream fileStreamOut;
 	private PacketGenerator packetGenerator;
-
 	private byte[] receiveData = new byte[500];
 
 	public Server() {
@@ -30,26 +30,24 @@ public class Server {
 	       t.start();
 	}
 	private void runWork() {
-	    createServerSocket(PORT);
+	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
-
         packetGenerator = new PacketGenerator(receiveData.length);
-
-
         while (true) {
                 request = new DatagramPacket(receiveData, receiveData.length);
                 receivePacketIntoSocket(request);
-                printPacketInfo();
-                respondPositive();
-                packetNumber++;
-                writeDataToStream();
-
 
                 if(PacketData.getLen(request) < 0) {
                     break;
                 }
 
-
+            if (verifyPacket()) {
+                System.out.println("[SERVER] Packet is verified.");
+            		printPacketInfo();
+            		packetNumber++;
+            		writeDataToStream(receiveData, 0);
+            		respondPositive();
+            }
         }
 	}
 	private void respondPositive() {
@@ -69,7 +67,9 @@ public class Server {
         }
 	}
 	private boolean verifyPacket() {
-    		return PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
+			boolean retval = PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
+			System.out.println("[SERVER] CHECKSUM IS GOOD?: " + retval );
+			return retval;
 	}
 	private void printPacketInfo() {
         System.out.println("\n[SERVER]: PACKET RECEIVED. INFO: \n"
@@ -84,9 +84,9 @@ public class Server {
             + "\n"
             );
     }
-    private void writeDataToStream() {
+    private void writeDataToStream(byte[] recData, int offset) {
         try {
-            fileStreamOut.write(receiveData, 0, receiveData.length);
+            fileStreamOut.write(recData, 0, recData.length);
         } catch ( IOException x ) {
             x.printStackTrace();
         }
@@ -104,7 +104,7 @@ public class Server {
         try {
             fileStreamOut = new FileOutputStream(fileOutName);
         } catch ( FileNotFoundException x ) {
-            System.err.println("Problem on creating output stream.");
+            System.err.println("[SERVER] Problem on creating output stream.");
             x.printStackTrace();
         }
     }
@@ -118,7 +118,7 @@ public class Server {
             serverSocket = new DatagramSocket(port);
             System.out.println("[SERVER] Server socket started on port: " + serverSocket.getLocalPort());
         } catch ( SocketException x ) {
-            System.err.println("Problem on creating server socket.");
+            System.err.println("[SERVER] Problem on creating server socket.");
             x.printStackTrace();
         }
     }
