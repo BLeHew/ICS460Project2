@@ -39,10 +39,8 @@ public class Client {
         Thread t = new Thread(r);
         t.setName("Client");
         t.start();
-
     }
     private void runWork() {
-
         createSocket(Driver.CLIENTPORT);
         assignIPAddress();
         System.out.println("Relative filepath to file you want client to send to server?");
@@ -69,7 +67,11 @@ public class Client {
                     packetWindow.remove(responsePacket);
                 }
                 packetNum++;
-       	}
+        }
+        while (!packetWindow.isEmpty()) {
+        	 	waitForResponsePacket();
+        	 	packetWindow.remove(responsePacket);
+        }
         clientSocket.close();
         System.out.println("[CLIENT] Client socket closed");
     }

@@ -27,6 +27,9 @@ public class PacketWindow {
     public boolean isFull() {
         return full;
     }
+    public boolean isEmpty() {
+        return packets.isEmpty();
+    }
     public void remove(DatagramPacket p) {
         int otherAckno = PacketData.getAckNo(p);
         for(int i = 0; i < packets.size(); i++) {
