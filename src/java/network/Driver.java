@@ -13,7 +13,7 @@ public class Driver {
     static String cliOrServ;
 
     public static void main(String args[]) {
-       // clientOrServerMethod();
+       //clientOrServerMethod();
        Client client = new Client();
        Server server = new Server();
        //Proxy proxy = new Proxy();

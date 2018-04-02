@@ -37,20 +37,19 @@ public class Server {
 
 
         while (true) {
-
                 request = new DatagramPacket(receiveData, receiveData.length);
+                receivePacketIntoSocket(request);
+                printPacketInfo();
+                respondPositive();
+                packetNumber++;
+                writeDataToStream();
 
-                receivePacketIntoSocket();
 
-
-
-                if (verifyPacket()) {
-                    System.out.println("Packet is good.");
-                		respondPositive();
-                		printPacketInfo();
-                		packetNumber++;
-                		writeDataToStream();
+                if(PacketData.getLen(request) < 0) {
+                    break;
                 }
+
+
         }
 	}
 	private void respondPositive() {
@@ -58,11 +57,13 @@ public class Server {
 
 	    System.out.println("Request address: " + request.getAddress());
 	    System.out.println("Request port: "  + request.getPort());
-	    response.setAddress(request.getAddress());
+
+        response.setAddress(request.getAddress());
 	    response.setPort(request.getPort());
 
 	    try {
             serverSocket.send(response);
+            System.out.println("Packet sent with ackNo of: " + PacketData.getAckNo(response));
         } catch ( IOException x ) {
             x.printStackTrace();
         }
@@ -90,9 +91,9 @@ public class Server {
             x.printStackTrace();
         }
     }
-    private void receivePacketIntoSocket() {
+    private void receivePacketIntoSocket(DatagramPacket p) {
         try {
-            serverSocket.receive(request);
+            serverSocket.receive(p);
         } catch ( IOException x ) {
             System.err.println("[SERVER] Error receiving packet into socket.");
             x.printStackTrace();

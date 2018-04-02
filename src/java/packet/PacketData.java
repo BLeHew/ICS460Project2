@@ -25,8 +25,7 @@ public class PacketData {
         temp[0] = p.getData()[2];
         temp[1] = p.getData()[3];
 
-
-        return (short)Converter.toInt(temp);
+        return Converter.toShort(temp);
 
     }
     //helper method to get the sequence number from the given data packet

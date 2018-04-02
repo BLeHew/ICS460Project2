@@ -47,7 +47,8 @@ public class PacketGenerator {
 
         packet.setLen(buffer.length);
 
-        packet.setCksum(Packet.CHECKSUMBAD);
+        packet.setCksum(Packet.CHECKSUMGOOD);
+
         packet.setData(buffer);
 
         return new DatagramPacket(packet.getPacketAsArrayOfBytes(),buffer.length + Packet.DATAPACKETHEADERSIZE);
