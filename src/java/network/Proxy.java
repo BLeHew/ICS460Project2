@@ -143,39 +143,47 @@ public class Proxy {
 		if(rand1 <= Driver.INTERFERENCE_PERCENTAGE) {
 			 if(rand2<=3) {
  					packet = changeByteInPacket(packet);
-			 }else if (rand2 > 3 && rand2 <=7) {
+			 }else if (rand2 > 3 && rand2 <=6) {
  					packet = dropByteFromPacket(packet);
-			 }else {
+			 }else if (rand2 > 6 && rand2 <= 8){
  					packet = makePacketDisappear(packet);
+ 			 }else {
+ 				 	packet = changeChecksumToBad(packet);
  			 }
 	 	}
 	 	return packet;
 	}
 
-	//must generate 1 bit number.
+	//create random int (0 --> percent)
 	private int randomNumberGenerator(int percent) {
  		Random rand = new Random();
 		int value = rand.nextInt(percent);
  		return value;
  	}
 
+	//simulate byte value change in packet
 	private DatagramPacket changeByteInPacket(DatagramPacket packet) {
 		byte[] data = packet.getData();
 		data[1]=(byte)(randomNumberGenerator(1));
 		packet.setData(data);
-		PacketData.setCkSumBad(packet);
+		return packet;
+	}
+	
+	private DatagramPacket changeChecksumToBad(DatagramPacket packet) {
+		PacketData.setCkSumBad(packet); //TODO actually use checksums.
 		return packet;
 	}
 
+	//Simulate missing byte in packet
 	private DatagramPacket dropByteFromPacket(DatagramPacket packet) {
-		byte[] data = new byte[packet.getData().length - 1];
-
-
-		packet.setData(data);
-		PacketData.setCkSumBad(packet);
+		byte[] missingData = new byte[packet.getData().length - 1];
+		packet.setData(missingData);
 		return packet;
 	}
+	
+	///Simulate a dropped packet. 
 	private DatagramPacket makePacketDisappear(DatagramPacket packet){
-		return null;
+		packet.setPort(Driver.SERVERPORT+10);
+		return packet;
 	}
 }

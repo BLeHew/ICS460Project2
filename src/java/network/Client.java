@@ -26,6 +26,7 @@ public class Client {
     private int totalPackets;
     private int startOffset = 0;
     private int packetSize;
+    private Proxy proxy = new Proxy();
 
     private FileInputStream fileStreamIn;
 
@@ -64,13 +65,14 @@ public class Client {
                     packetWindow.remove(responsePacket);
                 }
                 if(!packetWindow.isEmpty()) {
-
+                		
                 }
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
                 sendPacket.setPort(Driver.SERVERPORT);
-                sendPacketFromClient(sendPacket);
-                packetWindow.add(sendPacket);
+                sendPacketFromClient(proxy.interfere(sendPacket));
+                packetWindow.add(sendPacket);  //should this be before the send? 
+                								//Server could respond quicker than papcketWindow adds, which would result in exception
         }
 
         clientSocket.close();
@@ -86,7 +88,7 @@ public class Client {
     private void waitForResponsePacket() {
         try {
             	responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
-            	clientSocket.setSoTimeout(2000);
+            	clientSocket.setSoTimeout(3000);
         		clientSocket.receive(responsePacket);
         		System.out.println("[CLIENT] Ack packet received with ack of: " + PacketData.getAckNo(responsePacket));
         } catch ( IOException x ) {

@@ -72,7 +72,7 @@ public class Server {
         }
 	}
 	private boolean verifyPacket() {
-			boolean retval = PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
+			boolean retval = PacketData.getCkSum(request) == Packet.CHECKSUMGOOD; //TODO method to calculate checksum from data, match? 
 			System.out.println("[SERVER]: CHECKSUM IS GOOD?: " + retval );
 			System.out.println("[SERVER]: Packet is verified.");
 			return retval;
