@@ -6,7 +6,7 @@ import java.util.*;
 public class PacketWindow {
     private ArrayList<DatagramPacket> packets = new ArrayList<>();
     private int size;
-    private boolean full = false;
+    private boolean hasPackets = false;
 
     public PacketWindow(int size) {
         this.size = size;
@@ -19,11 +19,11 @@ public class PacketWindow {
         }
         packets.add(p);
         if(packets.size() == size) {
-            full = true;
+            hasPackets = true;
         }
     }
-    public boolean isFull() {
-        return full;
+    public boolean hasPackets() {
+        return hasPackets;
     }
     public boolean isEmpty() {
         return packets.isEmpty();
@@ -35,7 +35,7 @@ public class PacketWindow {
             if(PacketData.getAckNo(packets.get(i)) == otherAckno){
                 packets.remove(i);
                 if(packets.isEmpty()) {
-                    full = false;
+                    hasPackets = false;
                 }
             }
         }

@@ -4,7 +4,6 @@ import java.net.*;
 import java.util.*;
 
 import generators.*;
-import helpers.*;
 import packet.*;
 
 
@@ -57,22 +56,15 @@ public class Client {
 
         while(packetGenerator.hasMoreData()) {
 
-                delayForSimulation(1000);   //time in milliseconds for simulation delay
+                delayForSimulation(1000);   //time in milliseconds for simulation
 
 
-
-                boolean stop = packetWindow.isFull();
-
-                StopwatchHelper sh = new StopwatchHelper();
-
-                while(stop) {
+                while(packetWindow.hasPackets()) {
                     waitForResponsePacket();
-
-                    if((sh.elapsedTime() >= 2) || packetWindow.isEmpty()) {
-                        stop = false;
-                        sh.reset();
-                    }
                     packetWindow.remove(responsePacket);
+                }
+                if(!packetWindow.isEmpty()) {
+
                 }
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
@@ -94,6 +86,7 @@ public class Client {
     private void waitForResponsePacket() {
         try {
             	responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
+            	clientSocket.setSoTimeout(2000);
         		clientSocket.receive(responsePacket);
         		System.out.println("[CLIENT] Ack packet received with ack of: " + PacketData.getAckNo(responsePacket));
         } catch ( IOException x ) {
