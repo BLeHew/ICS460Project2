@@ -16,7 +16,8 @@ public class Server {
 	private int startOffset = 0;
 	private FileOutputStream fileStreamOut;
 	private PacketGenerator packetGenerator;
-	private byte[] receiveData = new byte[500];
+	private byte[] receiveData = new byte[512];
+	int numBytes = 0;
 
 	public Server() {
 	    Runnable r = new Runnable() {
@@ -33,21 +34,30 @@ public class Server {
 	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
         packetGenerator = new PacketGenerator(receiveData.length);
+        request = new DatagramPacket(receiveData, receiveData.length);
+
+
         while (true) {
-                request = new DatagramPacket(receiveData, receiveData.length);
+
                 receivePacketIntoSocket(request);
 
-                if(PacketData.getLen(request) < 0) {
-                    break;
+                /*
+                if(PacketData.getLen(request) < receiveData.length) {
+                    receiveData = new byte[PacketData.getLen(request) - Packet.DATAPACKETHEADERSIZE];
                 }
-
+                */
+                writeDataToStream(request.getData());
+                /*
             if (verifyPacket()) {
                 System.out.println("[SERVER] Packet is verified.");
             		printPacketInfo();
             		packetNumber++;
-            		writeDataToStream(receiveData, 0);
+            		writeDataToStream(receiveData);
             		respondPositive();
             }
+            */
+            numBytes += receiveData.length;
+            System.out.println("NUMBYTES RECEIVED------------------------------" + numBytes);
         }
 	}
 	private void respondPositive() {
@@ -80,13 +90,13 @@ public class Server {
             + request.getLength()
             + "\n"
             + "[SERVER]: PACKET_OFFSET: "
-            + "START:" + startOffset + " - END: "+ (startOffset += request.getLength())
+            + "START:" + startOffset + " - END: "+ (startOffset += receiveData.length)
             + "\n"
             );
     }
-    private void writeDataToStream(byte[] recData, int offset) {
+    private void writeDataToStream(byte[] recData) {
         try {
-            fileStreamOut.write(recData, 0, recData.length);
+            fileStreamOut.write(recData, Packet.DATAPACKETHEADERSIZE, recData.length - Packet.DATAPACKETHEADERSIZE);
         } catch ( IOException x ) {
             x.printStackTrace();
         }

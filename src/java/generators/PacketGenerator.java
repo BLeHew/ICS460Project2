@@ -43,7 +43,7 @@ public class PacketGenerator {
         packet.setAckno(ackNo);
        // System.out.println("Set: " + ackNo + " as the ackNo");
 
-        packet.setLen(buffer.length);
+        //packet.setLen(buffer.length);
 
         packet.setCksum(Packet.CHECKSUMGOOD);
 
@@ -61,7 +61,7 @@ public class PacketGenerator {
 
         packet.setCksum(otherCkSum);
         packet.setAckno(otherAckNo);
-        packet.setLen(Packet.ACKPACKETHEADERSIZE);
+        //packet.setLen(Packet.ACKPACKETHEADERSIZE);
 
         return new DatagramPacket(packet.getPacketAsArrayOfBytes(), Packet.ACKPACKETHEADERSIZE);
     }

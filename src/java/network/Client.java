@@ -58,7 +58,8 @@ public class Client {
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
                 sendPacket.setPort(Driver.SERVERPORT);
-
+                sendPacketFromClient(sendPacket);
+                /*
                 if(!packetWindow.isFull()) {
                      sendPacketFromClient(sendPacket);
                      packetWindow.add(sendPacket);
@@ -73,13 +74,13 @@ public class Client {
         	 	waitForResponsePacket();
         	 	packetWindow.remove(responsePacket);
         }
+        */
+        }
         clientSocket.close();
         System.out.println("[CLIENT] Client socket closed");
     }
     private void waitForResponsePacket() {
         try {
-                responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
-        		clientSocket.receive(responsePacket);
             	responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
         		clientSocket.receive(responsePacket);
         		System.out.println("[CLIENT] Ack packet received with ack of: " + PacketData.getAckNo(responsePacket));

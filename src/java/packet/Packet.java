@@ -7,8 +7,8 @@ public class Packet {
     public static final short CHECKSUMGOOD = 0;
     public static final short CHECKSUMBAD = 1;
 
-    public static final int DATAPACKETHEADERSIZE = 12;
-    public static final int ACKPACKETHEADERSIZE = 8;
+    public static final short DATAPACKETHEADERSIZE = 12;
+    public static final short ACKPACKETHEADERSIZE = 8;
 	private short ckSum;
     private short len;
     private int ackNo;
@@ -37,8 +37,17 @@ public class Packet {
     public Packet() {}; // empty constructor
 
     public byte[] generateHeaderAsArrayOfBytes() {
+        if(data != null) {
+            len = (short) (DATAPACKETHEADERSIZE + data.length);
+        }
+        else {
+            len = ACKPACKETHEADERSIZE;
+        }
+
     	header = new PacketHeader(this);
-    	return header.getHeader();
+
+
+         return header.getHeader();
     }
     /**
      * combines the data and header byte[]s and returns them as one byte[]
@@ -74,8 +83,8 @@ public class Packet {
 		this.ckSum = (short) ckSum;
 	}
 
-	public void setLen(int length) {
-		this.len = (short)length;
+	public void setLen(short len) {
+		this.len = len;
 	}
 
 	public int getAckno() {
@@ -105,7 +114,7 @@ public class Packet {
 	public int getHeaderSize() {
 		return generateHeaderAsArrayOfBytes().length;
 	}
-    public int getLen() {
+    public short getLen() {
         return len;
     }
 

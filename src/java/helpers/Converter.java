@@ -21,12 +21,8 @@ public class Converter {
         return result;
     }
     public static byte[] toBytes(short s) {
-        byte[] result = new byte[2];
+        return ByteBuffer.allocate(2).order(ByteOrder.BIG_ENDIAN).putShort(s).array();
 
-        result[0] = (byte) (s >> 8);
-        result[1] = (byte) (s);
-
-        return result;
     }
     //convert the packet to its byte representation
     public static byte[] toBytes(Packet p) {
@@ -38,7 +34,7 @@ public class Converter {
         else {
             byte[] combined = new byte[header.length + p.getLen()];
             System.arraycopy(header,0,combined,0,header.length);
-            System.arraycopy(p.getData(),0,combined,header.length,p.getLen());
+            System.arraycopy(p.getData(),0,combined,header.length,p.getData().length);
             return combined;
         }
     }
@@ -52,8 +48,7 @@ public class Converter {
             (array[0] & 0xFF) << 24;
     }
     public static short toShort(byte[] array) {
-        ByteBuffer buffer = ByteBuffer.wrap(array);
-        return buffer.getShort();
+        return ByteBuffer.wrap(array).getShort();
     }
 
 }
