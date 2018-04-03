@@ -17,7 +17,8 @@ public class Server {
 	private FileOutputStream fileStreamOut;
 	private PacketGenerator packetGenerator;
 	private byte[] receiveData = new byte[512];
-	int numBytes = 0;
+
+	private int dataLength = receiveData.length - Packet.DATAPACKETHEADERSIZE;
 
 	public Server() {
 	    Runnable r = new Runnable() {
@@ -41,44 +42,39 @@ public class Server {
 
                 receivePacketIntoSocket(request);
 
-                /*
-                if(PacketData.getLen(request) < receiveData.length) {
-                    receiveData = new byte[PacketData.getLen(request) - Packet.DATAPACKETHEADERSIZE];
-                }
-                */
-                writeDataToStream(request.getData());
-                /*
-            if (verifyPacket()) {
-                System.out.println("[SERVER] Packet is verified.");
-            		printPacketInfo();
-            		packetNumber++;
-            		writeDataToStream(receiveData);
-            		respondPositive();
+                if (verifyPacket()) {
+
+                    adjustDataLength(PacketData.getLen(request));
+
+                    printPacketInfo();
+                    packetNumber++ ;
+                    writeDataToStream(receiveData);
+                    respondPositive();
             }
-            */
-            numBytes += receiveData.length;
-            System.out.println("NUMBYTES RECEIVED------------------------------" + numBytes);
+
         }
 	}
-	private void respondPositive() {
+	private void adjustDataLength(short len) {
+	    if(len < dataLength || len > dataLength) {
+            dataLength = len - Packet.DATAPACKETHEADERSIZE;
+        }
+    }
+    private void respondPositive() {
 	    response = packetGenerator.getAckPacket(request);
-
-	    System.out.println("Request address: " + request.getAddress());
-	    System.out.println("Request port: "  + request.getPort());
-
         response.setAddress(request.getAddress());
 	    response.setPort(request.getPort());
 
 	    try {
             serverSocket.send(response);
-            System.out.println("Packet sent with ackNo of: " + PacketData.getAckNo(response));
+            System.out.println("[SERVER]: Packet sent with ackNo of: " + PacketData.getAckNo(response));
         } catch ( IOException x ) {
             x.printStackTrace();
         }
 	}
 	private boolean verifyPacket() {
 			boolean retval = PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
-			System.out.println("[SERVER] CHECKSUM IS GOOD?: " + retval );
+			System.out.println("[SERVER]: CHECKSUM IS GOOD?: " + retval );
+			System.out.println("[SERVER]: Packet is verified.");
 			return retval;
 	}
 	private void printPacketInfo() {
@@ -96,7 +92,8 @@ public class Server {
     }
     private void writeDataToStream(byte[] recData) {
         try {
-            fileStreamOut.write(recData, Packet.DATAPACKETHEADERSIZE, recData.length - Packet.DATAPACKETHEADERSIZE);
+            System.out.println("[SERVER]: writing " + dataLength + " bytes to a file");
+            fileStreamOut.write(recData, Packet.DATAPACKETHEADERSIZE, dataLength);
         } catch ( IOException x ) {
             x.printStackTrace();
         }

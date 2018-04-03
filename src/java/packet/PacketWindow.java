@@ -3,8 +3,6 @@ package packet;
 import java.net.*;
 import java.util.*;
 
-import helpers.*;
-
 public class PacketWindow {
     private ArrayList<DatagramPacket> packets = new ArrayList<>();
     private int size;
@@ -31,11 +29,11 @@ public class PacketWindow {
         return packets.isEmpty();
     }
     public void remove(DatagramPacket p) {
+
         int otherAckno = PacketData.getAckNo(p);
         for(int i = 0; i < packets.size(); i++) {
             if(PacketData.getAckNo(packets.get(i)) == otherAckno){
                 packets.remove(i);
-
                 if(packets.isEmpty()) {
                     full = false;
                 }

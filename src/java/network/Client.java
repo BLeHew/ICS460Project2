@@ -4,6 +4,7 @@ import java.net.*;
 import java.util.*;
 
 import generators.*;
+import helpers.*;
 import packet.*;
 
 
@@ -43,41 +44,52 @@ public class Client {
     private void runWork() {
         createSocket(Driver.CLIENTPORT);
         assignIPAddress();
-        System.out.println("Relative filepath to file you want client to send to server?");
+        System.out.println("[CLIENT]: Relative filepath to file you want client to send to server?");
 
         //keep attempting to create fileStream from user input
         while(!createFileStream(inFromUser.nextLine()));
 
         //TODO allow user to designate the size of the packets to be sent
-        packetSize = 500;
+        packetSize = 50;
         packetGenerator = new PacketGenerator(fileStreamIn, packetSize);
         totalPackets = packetGenerator.packetsLeft(); //get number of packets to send
 
 
         while(packetGenerator.hasMoreData()) {
+
+                delayForSimulation(1000);   //time in milliseconds for simulation delay
+
+
+
+                boolean stop = packetWindow.isFull();
+
+                StopwatchHelper sh = new StopwatchHelper();
+
+                while(stop) {
+                    waitForResponsePacket();
+
+                    if((sh.elapsedTime() >= 2) || packetWindow.isEmpty()) {
+                        stop = false;
+                        sh.reset();
+                    }
+                    packetWindow.remove(responsePacket);
+                }
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
                 sendPacket.setPort(Driver.SERVERPORT);
                 sendPacketFromClient(sendPacket);
-                /*
-                if(!packetWindow.isFull()) {
-                     sendPacketFromClient(sendPacket);
-                     packetWindow.add(sendPacket);
-                }
-                else {
-                    waitForResponsePacket();
-                    packetWindow.remove(responsePacket);
-                }
-                packetNum++;
+                packetWindow.add(sendPacket);
         }
-        while (!packetWindow.isEmpty()) {
-        	 	waitForResponsePacket();
-        	 	packetWindow.remove(responsePacket);
-        }
-        */
-        }
+
         clientSocket.close();
         System.out.println("[CLIENT] Client socket closed");
+    }
+    private void delayForSimulation(int i) {
+        try {
+            Thread.sleep(i);
+        } catch ( InterruptedException x ) {
+            x.printStackTrace();
+        }
     }
     private void waitForResponsePacket() {
         try {
@@ -92,15 +104,12 @@ public class Client {
         try {
 
             System.out.println("[CLIENT]: [SENDING]: " + packetNum + "/" + totalPackets);
-            System.out.println("[CLIENT]: PACKET_OFFSET: "
-                                                       + startOffset
-                                                       + " - END: "
+            System.out.println("[CLIENT]: PACKET_OFFSET: " + startOffset + " - END: "
                                                        + (startOffset += sendPacket.getLength())
                                                        + "\n");
-            System.out.println("Client:  packet port " + sendPacket.getPort());
-            System.out.println("Client:  packet addr " + sendPacket.getAddress());
-            System.out.println("Client:  packet ACK: " + PacketData.getAckNo(sendPacket));
-
+            System.out.println("[CLIENT]:  packet Seq: " + PacketData.getSeqNo(sendPacket));
+            System.out.println("[CLIENT]:  packet ACK: " + PacketData.getAckNo(sendPacket));
+            System.out.println("[CLIENT]:  packet Len: " + PacketData.getLen(sendPacket));
             clientSocket.send(sendPacket);
             //Proxy proxy = new Proxy();
             //clientSocket.send(proxy.interfere(packetToSend));
@@ -111,10 +120,10 @@ public class Client {
     private boolean createFileStream(String filePath) {
         try {
             fileStreamIn = new FileInputStream(filePath);
-            System.out.println("File stream created for: " + filePath);
+            System.out.println("[CLIENT]: File stream created for: " + filePath);
             return true;
         } catch ( FileNotFoundException x ) {
-            System.err.println("Unable to find file, please try again.");
+            System.err.println("[CLIENT]: Unable to find file, please try again.");
             return false;
         }
     }
@@ -129,9 +138,9 @@ public class Client {
         try {
             //clientSocket = new DatagramSocket();
             clientSocket = new DatagramSocket(port);
-            System.out.println("[CLIENT] Client socket started on port: " + clientSocket.getLocalPort());
+            System.out.println("[CLIENT]: Client socket started on port: " + clientSocket.getLocalPort());
         }catch ( SocketException x ) {
-        System.err.println("[CLIENT} Problem on creating client socket.");
+        System.err.println("[CLIENT]: Problem on creating client socket.");
         x.printStackTrace();
         }
     }

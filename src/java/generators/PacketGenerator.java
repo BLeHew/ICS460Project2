@@ -38,8 +38,9 @@ public class PacketGenerator {
 
        // System.out.println("Set: " + seqNo + " as the seqNo");
         ackNo += packetSize + Packet.DATAPACKETHEADERSIZE;
-        seqNo += ackNo;
+
         packet.setSeqno(seqNo);
+        seqNo += 1;
         packet.setAckno(ackNo);
        // System.out.println("Set: " + ackNo + " as the ackNo");
 

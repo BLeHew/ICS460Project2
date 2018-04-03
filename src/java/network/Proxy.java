@@ -1,6 +1,5 @@
 package network;
 
-import java.io.*;
 import java.net.*;
 import java.util.*;
 
@@ -36,10 +35,10 @@ public class Proxy {
 //	private void runWork() {
 //	    createServerProxySocket();
 //	    createClientProxySocket();
-//	    
-//	    // while true, manage two way street between client and server. 
+//
+//	    // while true, manage two way street between client and server.
 //        while (true) {
-//        	//we dont want either of these to bloc.. .we want it to go back and forth between the methods freely. 
+//        	//we dont want either of these to bloc.. .we want it to go back and forth between the methods freely.
 //        		clientToServer();
 //   		//	serverToClientResponse(); TODO Reimplement. Currently we respond straight from server to client
 //        }
@@ -49,7 +48,7 @@ public class Proxy {
 //		// receive from client logic
 //		 clientToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
 //		 receivePacketIntoSocket(clientToProxyPacket);
-//		 
+//
 //		 //now get it ready to send to server.
 //		proxyToServerPacket = clientToProxyPacket;
 //		//proxyToServerPacket = interference(clientToProxyPacket); TODO implement this line
@@ -66,7 +65,7 @@ public class Proxy {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-//		
+//
 //	}
 //	private void serverToClientResponse() {
 //		 serverToProxyPacket = new DatagramPacket(receiveData, receiveData.length);
@@ -75,11 +74,11 @@ public class Proxy {
 //
 //		//now get it ready to send to client.
 //		proxyToClientPacket = serverToProxyPacket;
-//	
+//
 //		// send to client logic
 //		proxyToClientPacket.setAddress(IPAddress);
 //		proxyToClientPacket.setPort(Driver.CLIENTPORT);
-//		
+//
 //		try {
 //		clientProxySocket.send(proxyToClientPacket);
 //		System.out.println("[PROXY] sent packet to client");
@@ -131,8 +130,8 @@ public class Proxy {
 //            x.printStackTrace();
 //        }
 //    }
-	
-	
+
+
 
     /*
      * BELOW HERE WE HAVE THE "FAULTY NETWORK" METHODS
@@ -152,26 +151,28 @@ public class Proxy {
 	 	}
 	 	return packet;
 	}
-	
-	//must generate 1 bit number. 
+
+	//must generate 1 bit number.
 	private int randomNumberGenerator(int percent) {
- 		Random rand = new Random(); 
-		int value = rand.nextInt(percent); 
+ 		Random rand = new Random();
+		int value = rand.nextInt(percent);
  		return value;
- 	}	 	
+ 	}
 
 	private DatagramPacket changeByteInPacket(DatagramPacket packet) {
 		byte[] data = packet.getData();
 		data[1]=(byte)(randomNumberGenerator(1));
 		packet.setData(data);
+		PacketData.setCkSumBad(packet);
 		return packet;
 	}
 
 	private DatagramPacket dropByteFromPacket(DatagramPacket packet) {
 		byte[] data = new byte[packet.getData().length - 1];
 
-		PacketData.setCkSumBad(packet);
+
 		packet.setData(data);
+		PacketData.setCkSumBad(packet);
 		return packet;
 	}
 	private DatagramPacket makePacketDisappear(DatagramPacket packet){

@@ -17,23 +17,6 @@ public class Packet {
 
     private PacketHeader header;
 
-    //Two types of packets, this one is acknowledgement packet
-    public Packet(int ackNo) {
-            //also has checksum
-    		this.ackNo = ackNo % 64;
-    		this.len = ACKPACKETHEADERSIZE;
-    }
-
-    //this is a data packet
-    public Packet(int ackNo, int seqNo, byte[] data) {
-        //also has checksum
-        this.ackNo = ackNo;
-        this.seqNo = seqNo;
-        this.data = data;
-
-        //data packet length will be the size of the data + 12 bytes for the header
-        this.len = (short) (data.length + DATAPACKETHEADERSIZE);
-    }
     public Packet() {}; // empty constructor
 
     public byte[] generateHeaderAsArrayOfBytes() {
