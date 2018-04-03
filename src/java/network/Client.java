@@ -16,7 +16,7 @@ public class Client {
     private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(5);
+    private PacketWindow packetWindow = new PacketWindow(1);
 
     private PacketGenerator packetGenerator;
 
@@ -26,7 +26,6 @@ public class Client {
     private int totalPackets;
     private int startOffset = 0;
     private int packetSize;
-    private Proxy proxy = new Proxy();
 
     private FileInputStream fileStreamIn;
 
@@ -61,18 +60,18 @@ public class Client {
 
 
                 while(packetWindow.hasPackets()) {
-                    waitForResponsePacket();
-                    packetWindow.remove(responsePacket);
-                }
-                if(!packetWindow.isEmpty()) {
-                		
+                    if(!waitForResponsePacket()) {
+                        for(int i = 0; i < packetWindow.size() ; i++) {
+                            sendPacketFromClient(packetWindow.get(i));
+                        }
+                    }
+
                 }
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacket.setAddress(IPAddress);
                 sendPacket.setPort(Driver.SERVERPORT);
-                sendPacketFromClient(proxy.interfere(sendPacket));
-                packetWindow.add(sendPacket);  //should this be before the send? 
-                								//Server could respond quicker than papcketWindow adds, which would result in exception
+                sendPacketFromClient(sendPacket);
+                packetWindow.add(sendPacket);
         }
 
         clientSocket.close();
@@ -85,14 +84,16 @@ public class Client {
             x.printStackTrace();
         }
     }
-    private void waitForResponsePacket() {
+    private boolean waitForResponsePacket() {
         try {
             	responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
-            	clientSocket.setSoTimeout(3000);
+            	clientSocket.setSoTimeout(2000);
         		clientSocket.receive(responsePacket);
+        		packetWindow.remove(responsePacket);
         		System.out.println("[CLIENT] Ack packet received with ack of: " + PacketData.getAckNo(responsePacket));
+        		return true;
         } catch ( IOException x ) {
-            x.printStackTrace();
+            return false;
         }
     }
     private void sendPacketFromClient(DatagramPacket packetToSend) {
@@ -131,7 +132,6 @@ public class Client {
     }
     private void createSocket(int port) {
         try {
-            //clientSocket = new DatagramSocket();
             clientSocket = new DatagramSocket(port);
             System.out.println("[CLIENT]: Client socket started on port: " + clientSocket.getLocalPort());
         }catch ( SocketException x ) {

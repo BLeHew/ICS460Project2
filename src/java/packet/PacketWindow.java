@@ -11,7 +11,6 @@ public class PacketWindow {
     public PacketWindow(int size) {
         this.size = size;
     }
-
     public void add(DatagramPacket p) {
         if(packets.size() >= size) {
             System.out.println("Window is full");
@@ -22,14 +21,19 @@ public class PacketWindow {
             hasPackets = true;
         }
     }
+    public int size() {
+        return packets.size();
+    }
     public boolean hasPackets() {
         return hasPackets;
+    }
+    public DatagramPacket get(int index) {
+        return packets.get(index);
     }
     public boolean isEmpty() {
         return packets.isEmpty();
     }
     public void remove(DatagramPacket p) {
-
         int otherAckno = PacketData.getAckNo(p);
         for(int i = 0; i < packets.size(); i++) {
             if(PacketData.getAckNo(packets.get(i)) == otherAckno){
@@ -41,9 +45,11 @@ public class PacketWindow {
         }
     }
     public void print() {
+        System.out.print("PacketWindow packets : ");
         for(DatagramPacket p : packets) {
-            System.out.println("Packet ackNo: " + PacketData.getAckNo(p));
-            System.out.println("Packet seqNo: " + PacketData.getSeqNo(p) + "\n");
+            System.out.print("ackNo: " + PacketData.getAckNo(p));
+            System.out.print(" seqNo: " + PacketData.getSeqNo(p) + "\t");
         }
+        System.out.print("\n");
     }
 }

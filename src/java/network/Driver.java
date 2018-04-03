@@ -15,11 +15,10 @@ public class Driver {
 
     public static void main(String args[]) {
        //clientOrServerMethod();
-       userEnterInterferencePercentage();
+       //userEnterInterferencePercentage();
        Client client = new Client();
        Server server = new Server();
 
-       //Converter.test();
        // clientOrServerMethod();
     		//userEnterInterferencePercentage();
     		//Proxy proxy = new Proxy();
