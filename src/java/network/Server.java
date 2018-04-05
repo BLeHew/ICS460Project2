@@ -12,15 +12,16 @@ public class Server {
 	private DatagramPacket request;
 	private DatagramPacket response;
 
-	private int packetNumber = 0;
 	private int startOffset = 0;
 	private FileOutputStream fileStreamOut;
 	private PacketGenerator packetGenerator;
 	private byte[] receiveData = new byte[512];
 
+	private int dataLength = receiveData.length - Packet.DATAHEADERSIZE;
+
 	private PacketWindow packetWindow;
 
-	private int dataLength = receiveData.length - Packet.DATAPACKETHEADERSIZE;
+	//private int dataLength = receiveData.length - Packet.DATAHEADERSIZE;
 
 	public Server() {
 	    Runnable r = new Runnable() {
@@ -37,33 +38,38 @@ public class Server {
 	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
 
-        packetWindow = new PacketWindow(5);
+        packetWindow = new PacketWindow(2);
         packetGenerator = new PacketGenerator(receiveData.length);
         request = new DatagramPacket(receiveData, receiveData.length);
 
-
+        int i = 0;
         while (true) {
 
+            while(!packetWindow.isFull()) {
                 receivePacketIntoSocket(request);
+                //printPacketInfo();
+                respondPositive();
+                packetWindow.add(request);
+            }
+            writeDataToStream(packetWindow);
+            packetWindow.clear();
+        }
+	}
 
-                if (verifyPacket()) {
-
-                    adjustDataLength(PacketData.getLen(request));
-
-                    printPacketInfo();
-                    packetNumber++;
-                        writeDataToStream(receiveData);
-                        respondPositive();
-                        packetWindow.add(request);
+    private void writeDataToStream(PacketWindow pw) {
+        for(int i = 0; i < pw.size(); i++) {
+            System.out.println(i);
+            adjustDataLength(PacketData.getLen(pw.get(i)));
+            writeDataToStream(pw.get(i).getData());
             }
 
         }
-	}
-	private void adjustDataLength(short len) {
-	    if(len < dataLength || len > dataLength) {
-            dataLength = len - Packet.DATAPACKETHEADERSIZE;
+    private void adjustDataLength(short len) {
+	    if(len - Packet.DATAHEADERSIZE < dataLength) {
+            dataLength = len - Packet.DATAHEADERSIZE;
         }
     }
+
     private void respondPositive() {
 	    response = packetGenerator.getAckPacket(request);
         response.setAddress(request.getAddress());
@@ -85,20 +91,20 @@ public class Server {
 	private void printPacketInfo() {
         System.out.println("\n[SERVER]: PACKET RECEIVED. INFO: \n"
             + "[SERVER]: PACKET_NUMBER: "
-            + packetNumber
+            + PacketData.getSeqNo(request)
             + "\n"
             + "[SERVER]: PACKET_LENGTH: "
-            + request.getLength()
+            + PacketData.getLen(request)
             + "\n"
             + "[SERVER]: PACKET_OFFSET: "
-            + "START:" + startOffset + " - END: "+ (startOffset += receiveData.length)
+            + "START:" + startOffset + " - END: "+ (startOffset += PacketData.getLen(request))
             + "\n"
             );
     }
     private void writeDataToStream(byte[] recData) {
         try {
             System.out.println("[SERVER]: writing " + dataLength + " bytes to a file");
-            fileStreamOut.write(recData, Packet.DATAPACKETHEADERSIZE, dataLength);
+            fileStreamOut.write(recData, Packet.DATAHEADERSIZE, dataLength);
         } catch ( IOException x ) {
             x.printStackTrace();
         }

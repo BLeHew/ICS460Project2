@@ -7,7 +7,7 @@ public class Packet {
     public static final short CHECKSUMGOOD = 0;
     public static final short CHECKSUMBAD = 1;
 
-    public static final short DATAPACKETHEADERSIZE = 12;
+    public static final short DATAHEADERSIZE = 12;
     public static final short ACKPACKETHEADERSIZE = 8;
 	private short ckSum;
     private short len;
@@ -21,7 +21,7 @@ public class Packet {
 
     public byte[] generateHeaderAsArrayOfBytes() {
         if(data != null) {
-            len = (short) (DATAPACKETHEADERSIZE + data.length);
+            len = (short) (DATAHEADERSIZE + data.length);
         }
         else {
             len = ACKPACKETHEADERSIZE;

@@ -16,7 +16,7 @@ public class Client {
     private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(3);
+    private PacketWindow packetWindow = new PacketWindow(2);
 
     private PacketGenerator packetGenerator;
 
@@ -46,35 +46,35 @@ public class Client {
         System.out.println("[CLIENT]: Relative filepath to file you want client to send to server?");
 
         //keep attempting to create fileStream from user input
+
+
         while(!createFileStream(inFromUser.nextLine()));
 
         //TODO allow user to designate the size of the packets to be sent
-        packetSize = 50;
-        packetGenerator = new PacketGenerator(fileStreamIn, packetSize);
-        totalPackets = packetGenerator.packetsLeft(); //get number of packets to send
+        packetSize = 500;
 
+        packetGenerator = new PacketGenerator(fileStreamIn, packetSize, IPAddress, Driver.SERVERPORT);
+
+        totalPackets = packetGenerator.packetsLeft() + 1; //get number of packets to send
 
         while(packetGenerator.hasMoreData()) {
 
-                delayForSimulation(500);   //time in milliseconds for simulation
+                delayForSimulation(1000);   //time in milliseconds for simulation
 
+                sendPacket = packetGenerator.getPacketToSend();
 
+                while(!packetWindow.isFull()) {
+                    sendPacketFromClient(sendPacket);
+                    packetWindow.add(sendPacket);
+                    sendPacket = packetGenerator.getPacketToSend();
+                }
                 while(packetWindow.hasPackets()) {
                     if(!waitForResponsePacket()) {
-                        for(int i = 0; i < packetWindow.size() ; i++) {
-                            if(packetWindow.get(i) != null) {
-                                resendPacketFromClient(packetWindow.get(i));
-                                waitForResponsePacket();
-                            }
-                        }
+                        resendPacketFromClient(packetWindow.next());
+                        System.out.println("Resending...");
                     }
-
                 }
-                sendPacket = packetGenerator.getPacketToSend();
-                sendPacket.setAddress(IPAddress);
-                sendPacket.setPort(Driver.SERVERPORT);
-                sendPacketFromClient(sendPacket);
-                packetWindow.add(sendPacket);
+
         }
 
         clientSocket.close();

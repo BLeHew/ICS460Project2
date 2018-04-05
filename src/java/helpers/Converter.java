@@ -32,7 +32,7 @@ public class Converter {
             return header;
         }
         else {
-            byte[] combined = new byte[header.length + p.getLen()];
+            byte[] combined = new byte[header.length + p.getData().length];
             System.arraycopy(header,0,combined,0,header.length);
             System.arraycopy(p.getData(),0,combined,header.length,p.getData().length);
             return combined;

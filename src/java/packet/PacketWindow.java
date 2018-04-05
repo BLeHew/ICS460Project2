@@ -1,12 +1,16 @@
 package packet;
 
 import java.net.*;
+import java.util.*;
 
 public class PacketWindow {
     //private ArrayList<DatagramPacket> packets = new ArrayList<>();
     private DatagramPacket[] packets;
+    private int numPackets;
     private int size;
     private boolean hasPackets = false;
+
+    private int next = 0;
 
     public PacketWindow(int size) {
         this.size = size;
@@ -14,8 +18,28 @@ public class PacketWindow {
 
     }
     public void add(DatagramPacket p) {
-        System.out.println("Adding packet at window location: " + (PacketData.getSeqNo(p) % size));
-        packets[PacketData.getSeqNo(p) % size] = p;
+        if(packets[PacketData.getSeqNo(p) % size] == null) {
+            packets[PacketData.getSeqNo(p) % size] = p;
+            numPackets++;
+            System.out.println("Adding packet at window location: " + (PacketData.getSeqNo(p) % size));
+        }
+
+    }
+    public boolean hasMissingPackets() {
+        int i = 0;
+        for(; i < size; i++) {
+            if(packets[i] == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean isFull() {
+        return numPackets == size;
+    }
+    public void clear() {
+        Arrays.fill(packets,null);
+        numPackets = 0;
     }
     public int size() {
         return size;
@@ -24,12 +48,18 @@ public class PacketWindow {
         int i = 0;
         for(; i < size; i++) {
             if(!(packets[i] == null)) {
-                hasPackets = true;
+                return true;
             }
         }
-        return hasPackets;
+        return false;
     }
+    public DatagramPacket next() {
+        while(packets[next] == null) {
+            next++;
+        }
+        return packets[next++ % size];
 
+    }
     public DatagramPacket get(int index) {
         return packets[index];
     }
@@ -39,6 +69,7 @@ public class PacketWindow {
             if(packets[i] != null) {
                 if(PacketData.getAckNo(packets[i]) == otherAckno){
                     packets[i] = null;
+                    numPackets--;
                     if(isEmpty()) {
                         hasPackets = false;
                     }

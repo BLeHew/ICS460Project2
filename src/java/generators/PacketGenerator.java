@@ -16,11 +16,16 @@ public class PacketGenerator {
     private Packet packet;
     private int fileSize;
 
-    public PacketGenerator(FileInputStream fis, int packetSize) {
+    private InetAddress ipAddress;
+    private int serverPort;
+
+    public PacketGenerator(FileInputStream fis, int packetSize, InetAddress iPAddress, int serverPort) {
         this.packetSize = packetSize;
         fileStreamIn = fis;
         buffer = new byte[packetSize];
         packet = new Packet();
+        this.ipAddress = iPAddress;
+        this.serverPort = serverPort;
     }
     public PacketGenerator(int packetSize) {
         this.packetSize = packetSize;
@@ -30,27 +35,35 @@ public class PacketGenerator {
 
     public DatagramPacket getPacketToSend() {
 
+        if(!hasMoreData()) {
+            return null;
+        }
         if(dataLeft() < packetSize) {
             buffer = new byte[dataLeft()];
             packetSize = dataLeft();
         }
         readFileStreamIntoBuffer();
 
-       // System.out.println("Set: " + seqNo + " as the seqNo");
-        ackNo += packetSize + Packet.DATAPACKETHEADERSIZE;
+        ackNo += packetSize + Packet.DATAHEADERSIZE;
 
         packet.setSeqno(seqNo);
         seqNo += 1;
         packet.setAckno(ackNo);
-       // System.out.println("Set: " + ackNo + " as the ackNo");
-
-        //packet.setLen(buffer.length);
 
         packet.setCksum(Packet.CHECKSUMGOOD);
 
         packet.setData(buffer);
 
-        return new DatagramPacket(packet.getPacketAsArrayOfBytes(),buffer.length + Packet.DATAPACKETHEADERSIZE);
+        byte[] temp = packet.getPacketAsArrayOfBytes();
+
+        return  new DatagramPacket(temp, temp.length, ipAddress, serverPort);
+
+    }
+    public int nextPacketSize() {
+        return packetSize;
+    }
+    public DatagramPacket getInitialPacket() {
+        return new DatagramPacket(buffer,packetSize);
     }
     public DatagramPacket getResponsePacket(int size) {
         byte[] tempBuffer = new byte[size];
@@ -80,13 +93,11 @@ public class PacketGenerator {
         return value;
     }
     public int dataLeft() {
-        int dataLeft = 0;
         try {
-            dataLeft = fileStreamIn.available();
+            return fileStreamIn.available();
         } catch ( IOException x ) {
-            x.printStackTrace();
+            return 0;
         }
-        return dataLeft;
     }
     public int packetsLeft() {
         int numPacketsLeft = 0;
