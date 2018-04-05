@@ -1,48 +1,59 @@
 package packet;
 
 import java.net.*;
-import java.util.*;
 
 public class PacketWindow {
-    private ArrayList<DatagramPacket> packets = new ArrayList<>();
+    //private ArrayList<DatagramPacket> packets = new ArrayList<>();
+    private DatagramPacket[] packets;
     private int size;
     private boolean hasPackets = false;
 
     public PacketWindow(int size) {
         this.size = size;
+        packets = new DatagramPacket[size];
+
     }
     public void add(DatagramPacket p) {
-        if(packets.size() >= size) {
-            System.out.println("Window is full");
-            return;
-        }
-        packets.add(p);
-        if(packets.size() == size) {
-            hasPackets = true;
-        }
+        System.out.println("Adding packet at window location: " + (PacketData.getSeqNo(p) % size));
+        packets[PacketData.getSeqNo(p) % size] = p;
     }
     public int size() {
-        return packets.size();
+        return size;
     }
     public boolean hasPackets() {
+        int i = 0;
+        for(; i < size; i++) {
+            if(!(packets[i] == null)) {
+                hasPackets = true;
+            }
+        }
         return hasPackets;
     }
+
     public DatagramPacket get(int index) {
-        return packets.get(index);
-    }
-    public boolean isEmpty() {
-        return packets.isEmpty();
+        return packets[index];
     }
     public void remove(DatagramPacket p) {
         int otherAckno = PacketData.getAckNo(p);
-        for(int i = 0; i < packets.size(); i++) {
-            if(PacketData.getAckNo(packets.get(i)) == otherAckno){
-                packets.remove(i);
-                if(packets.isEmpty()) {
-                    hasPackets = false;
+        for(int i = 0; i < packets.length; i++) {
+            if(packets[i] != null) {
+                if(PacketData.getAckNo(packets[i]) == otherAckno){
+                    packets[i] = null;
+                    if(isEmpty()) {
+                        hasPackets = false;
+                    }
                 }
             }
         }
+    }
+    private boolean isEmpty() {
+        int i = 0;
+        for(; i < size; i++) {
+            if(!(packets[i] == null)) {
+                return false;
+            }
+        }
+        return true;
     }
     public void print() {
         System.out.print("PacketWindow packets : ");

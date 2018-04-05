@@ -16,7 +16,7 @@ public class Client {
     private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(1);
+    private PacketWindow packetWindow = new PacketWindow(3);
 
     private PacketGenerator packetGenerator;
 
@@ -56,13 +56,16 @@ public class Client {
 
         while(packetGenerator.hasMoreData()) {
 
-                delayForSimulation(1000);   //time in milliseconds for simulation
+                delayForSimulation(500);   //time in milliseconds for simulation
 
 
                 while(packetWindow.hasPackets()) {
                     if(!waitForResponsePacket()) {
                         for(int i = 0; i < packetWindow.size() ; i++) {
-                            sendPacketFromClient(packetWindow.get(i));
+                            if(packetWindow.get(i) != null) {
+                                resendPacketFromClient(packetWindow.get(i));
+                                waitForResponsePacket();
+                            }
                         }
                     }
 
@@ -76,6 +79,14 @@ public class Client {
 
         clientSocket.close();
         System.out.println("[CLIENT] Client socket closed");
+    }
+    private void resendPacketFromClient(DatagramPacket datagramPacket) {
+        System.out.println("[CLIENT]: [RESENDING] : " + PacketData.getSeqNo(datagramPacket));
+        try {
+            clientSocket.send(datagramPacket);
+        } catch ( IOException x ) {
+            x.printStackTrace();
+        }
     }
     private void delayForSimulation(int i) {
         try {
@@ -97,15 +108,13 @@ public class Client {
         }
     }
     private void sendPacketFromClient(DatagramPacket packetToSend) {
+        System.out.println("[CLIENT]: [SENDING]: " + PacketData.getSeqNo(sendPacket) + "/" + totalPackets);
+        System.out.println("[CLIENT]: PACKET_OFFSET: " + startOffset + " - END: "
+                                                   + (startOffset += sendPacket.getLength())
+                                                   + "\n");
+        System.out.println("[CLIENT]:  packet ACK: " + PacketData.getAckNo(sendPacket));
+        System.out.println("[CLIENT]:  packet Len: " + PacketData.getLen(sendPacket));
         try {
-
-            System.out.println("[CLIENT]: [SENDING]: " + packetNum + "/" + totalPackets);
-            System.out.println("[CLIENT]: PACKET_OFFSET: " + startOffset + " - END: "
-                                                       + (startOffset += sendPacket.getLength())
-                                                       + "\n");
-            System.out.println("[CLIENT]:  packet Seq: " + PacketData.getSeqNo(sendPacket));
-            System.out.println("[CLIENT]:  packet ACK: " + PacketData.getAckNo(sendPacket));
-            System.out.println("[CLIENT]:  packet Len: " + PacketData.getLen(sendPacket));
             clientSocket.send(sendPacket);
             //Proxy proxy = new Proxy();
             //clientSocket.send(proxy.interfere(packetToSend));

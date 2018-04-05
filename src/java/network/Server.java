@@ -18,6 +18,8 @@ public class Server {
 	private PacketGenerator packetGenerator;
 	private byte[] receiveData = new byte[512];
 
+	private PacketWindow packetWindow;
+
 	private int dataLength = receiveData.length - Packet.DATAPACKETHEADERSIZE;
 
 	public Server() {
@@ -34,6 +36,8 @@ public class Server {
 	private void runWork() {
 	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
+
+        packetWindow = new PacketWindow(5);
         packetGenerator = new PacketGenerator(receiveData.length);
         request = new DatagramPacket(receiveData, receiveData.length);
 
@@ -47,12 +51,10 @@ public class Server {
                     adjustDataLength(PacketData.getLen(request));
 
                     printPacketInfo();
-                    packetNumber++ ;
-
-                    if(packetNumber % 2 == 0) {
+                    packetNumber++;
                         writeDataToStream(receiveData);
                         respondPositive();
-                    }
+                        packetWindow.add(request);
             }
 
         }
@@ -76,8 +78,8 @@ public class Server {
 	}
 	private boolean verifyPacket() {
 			boolean retval = PacketData.getCkSum(request) == Packet.CHECKSUMGOOD; //TODO method to calculate checksum from data, match?
-			System.out.println("[SERVER]: CHECKSUM IS GOOD?: " + retval );
-			System.out.println("[SERVER]: Packet is verified.");
+			//System.out.println("[SERVER]: CHECKSUM IS GOOD?: " + retval );
+			//System.out.println("[SERVER]: Packet is verified.");
 			return retval;
 	}
 	private void printPacketInfo() {
