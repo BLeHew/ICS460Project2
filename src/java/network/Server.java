@@ -38,36 +38,44 @@ public class Server {
 	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
 
-        packetWindow = new PacketWindow(2);
+        packetWindow = new PacketWindow(5);
+
         packetGenerator = new PacketGenerator(receiveData.length);
         request = new DatagramPacket(receiveData, receiveData.length);
 
-        int i = 0;
         while (true) {
 
             while(!packetWindow.isFull()) {
                 receivePacketIntoSocket(request);
-                //printPacketInfo();
-                respondPositive();
+                System.out.print("[Server]: ");
                 packetWindow.add(request);
+
+               //printPacketInfo();
+                respondPositive();
+
             }
+            packetWindow.print();
+
             writeDataToStream(packetWindow);
             packetWindow.clear();
         }
 	}
 
     private void writeDataToStream(PacketWindow pw) {
+        pw.print();
         for(int i = 0; i < pw.size(); i++) {
-            System.out.println(i);
-            adjustDataLength(PacketData.getLen(pw.get(i)));
-            writeDataToStream(pw.get(i).getData());
+                adjustDataLength(PacketData.getLen(pw.get(i)));
+                writeDataToStream(pw.get(i).getData());
             }
 
         }
     private void adjustDataLength(short len) {
-	    if(len - Packet.DATAHEADERSIZE < dataLength) {
+        System.out.println("len: " + len);
+        System.out.println("len - Packet.Dataheadersize: " + (len - Packet.DATAHEADERSIZE));
+	    //if(len - Packet.DATAHEADERSIZE < dataLength || len > dataLength) {
+
             dataLength = len - Packet.DATAHEADERSIZE;
-        }
+        //}
     }
 
     private void respondPositive() {

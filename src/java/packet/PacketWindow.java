@@ -3,14 +3,14 @@ package packet;
 import java.net.*;
 import java.util.*;
 
+
 public class PacketWindow {
-    //private ArrayList<DatagramPacket> packets = new ArrayList<>();
+
     private DatagramPacket[] packets;
     private int numPackets;
     private int size;
-    private boolean hasPackets = false;
 
-    private int next = 0;
+    private boolean hasPackets = false;
 
     public PacketWindow(int size) {
         this.size = size;
@@ -18,11 +18,30 @@ public class PacketWindow {
 
     }
     public void add(DatagramPacket p) {
-        if(packets[PacketData.getSeqNo(p) % size] == null) {
-            packets[PacketData.getSeqNo(p) % size] = p;
+        int index = (PacketData.getSeqNo(p) - 1) % size;
+        //have to make a copy of the packet, or each subsequent packet will reference the first
+        byte[] tempData = p.getData();
+        int tempLength = p.getLength();
+
+        DatagramPacket copy = new DatagramPacket(tempData,tempLength);
+
+        if(packets[index] == null) {
+            packets[index] = copy;
+
+            System.out.println("index: " + index);
+            System.out.print("Packets[0]: ");
+            System.out.println(packets[0] == null ? "null" : PacketData.getLen(packets[0]) );
+            System.out.print("Packets[1]: ");
+            System.out.println(packets[1] == null ? "null" : PacketData.getLen(packets[1]) );
+            System.out.print("Packets[2]: ");
+            System.out.println(packets[2] == null ? "null" : PacketData.getLen(packets[2]) );
+            System.out.print("Packets[3]: ");
+            System.out.println(packets[3] == null ? "null" : PacketData.getLen(packets[3]) );
+            System.out.print("Packets[4]: ");
+            System.out.println(packets[4] == null ? "null" : PacketData.getLen(packets[4]) );
+
             numPackets++;
-            System.out.println("Adding packet at window location: " + (PacketData.getSeqNo(p) % size));
-        }
+          }
 
     }
     public boolean hasMissingPackets() {
@@ -53,13 +72,6 @@ public class PacketWindow {
         }
         return false;
     }
-    public DatagramPacket next() {
-        while(packets[next] == null) {
-            next++;
-        }
-        return packets[next++ % size];
-
-    }
     public DatagramPacket get(int index) {
         return packets[index];
     }
@@ -89,7 +101,7 @@ public class PacketWindow {
     public void print() {
         System.out.print("PacketWindow packets : ");
         for(DatagramPacket p : packets) {
-            System.out.print("ackNo: " + PacketData.getAckNo(p));
+            System.out.print("len: " + PacketData.getLen(p));
             System.out.print(" seqNo: " + PacketData.getSeqNo(p) + "\t");
         }
         System.out.print("\n");
