@@ -19,28 +19,25 @@ public class PacketWindow {
     }
     public void add(DatagramPacket p) {
         int index = (PacketData.getSeqNo(p) - 1) % size;
-        //have to make a copy of the packet, or each subsequent packet will reference the first
-        byte[] tempData = p.getData();
-        int tempLength = p.getLength();
 
-        DatagramPacket copy = new DatagramPacket(tempData,tempLength);
+        DatagramPacket copy = new DatagramPacket(p.getData(),p.getLength());
 
         if(packets[index] == null) {
             packets[index] = copy;
 
+            System.out.println("Length of P: " + PacketData.getLen(copy));
             System.out.println("index: " + index);
             System.out.print("Packets[0]: ");
             System.out.println(packets[0] == null ? "null" : PacketData.getLen(packets[0]) );
             System.out.print("Packets[1]: ");
             System.out.println(packets[1] == null ? "null" : PacketData.getLen(packets[1]) );
+            /*
             System.out.print("Packets[2]: ");
             System.out.println(packets[2] == null ? "null" : PacketData.getLen(packets[2]) );
             System.out.print("Packets[3]: ");
             System.out.println(packets[3] == null ? "null" : PacketData.getLen(packets[3]) );
-            System.out.print("Packets[4]: ");
-            System.out.println(packets[4] == null ? "null" : PacketData.getLen(packets[4]) );
-
-            numPackets++;
+            */
+             numPackets++;
           }
 
     }

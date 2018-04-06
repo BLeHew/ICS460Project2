@@ -56,7 +56,10 @@ public class PacketGenerator {
 
         byte[] temp = packet.getPacketAsArrayOfBytes();
 
-        return  new DatagramPacket(temp, temp.length, ipAddress, serverPort);
+
+        DatagramPacket p = new DatagramPacket(temp, temp.length, ipAddress, serverPort);
+        System.out.println("In packet generator: creating packet with len: " + PacketData.getLen(p));
+        return  p;
 
     }
     public int nextPacketSize() {

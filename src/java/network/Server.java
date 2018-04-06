@@ -38,19 +38,24 @@ public class Server {
 	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
 
-        packetWindow = new PacketWindow(5);
+        packetWindow = new PacketWindow(2);
 
         packetGenerator = new PacketGenerator(receiveData.length);
-        request = new DatagramPacket(receiveData, receiveData.length);
+
+
 
         while (true) {
 
             while(!packetWindow.isFull()) {
+
+                request = packetGenerator.getResponsePacket(receiveData.length);
+
                 receivePacketIntoSocket(request);
+                System.out.println("Packet length: " + PacketData.getLen(request));
                 System.out.print("[Server]: ");
                 packetWindow.add(request);
 
-               //printPacketInfo();
+                printPacketInfo();
                 respondPositive();
 
             }

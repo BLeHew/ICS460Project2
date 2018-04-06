@@ -16,7 +16,7 @@ public class Client {
     private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(5);
+    private PacketWindow packetWindow = new PacketWindow(2);
 
     private PacketGenerator packetGenerator;
 
@@ -51,7 +51,7 @@ public class Client {
         while(!createFileStream(inFromUser.nextLine()));
 
         //TODO allow user to designate the size of the packets to be sent
-        packetSize = 100;
+        packetSize = 500;
 
         packetGenerator = new PacketGenerator(fileStreamIn, packetSize, IPAddress, Driver.SERVERPORT);
 
@@ -67,6 +67,7 @@ public class Client {
                     sendPacket = packetGenerator.getPacketToSend();
                     sendPacketFromClient(sendPacket);
                     //packetWindow.add(sendPacket);
+                    System.out.println("[CLIENT]: Sent packet with len: " + PacketData.getLen(sendPacket));
                     delayForSimulation(1000);   //time in milliseconds for simulation
                  }
 
