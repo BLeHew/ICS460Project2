@@ -11,7 +11,7 @@ public class Driver {
 
     static Scanner userInput = new Scanner(System.in);
     static String cliOrServ;
-    public static int INTERFERENCE_PERCENTAGE;
+    public static int INTERFERENCE_PERCENTAGE = 10;
 
     public static void main(String args[]) {
        //clientOrServerMethod();

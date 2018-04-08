@@ -14,6 +14,7 @@ public class Client {
     private DatagramSocket clientSocket;
     private DatagramPacket responsePacket; //response from server
     private DatagramPacket sendPacket; // packet to send to server
+    private Proxy proxy = new Proxy(); 
 
     //TODO allow user to determine the size of the window
     private PacketWindow packetWindow = new PacketWindow(500);
@@ -50,7 +51,7 @@ public class Client {
         while(!createFileStream(inFromUser.nextLine()));
 
         //TODO allow user to designate the size of the packets to be sent
-        packetSize = 50;
+        packetSize = 500;
 
         packetGenerator = new PacketGenerator(fileStreamIn, packetSize, IPAddress, Driver.SERVERPORT);
 
@@ -62,7 +63,7 @@ public class Client {
                  while(!packetWindow.isFull() && packetGenerator.hasMoreData()) {
 
                     sendPacket = packetGenerator.getPacketToSend();
-                    sendPacketFromClient(sendPacket);
+                    sendPacketFromClient(proxy.interfere(sendPacket));
                     packetWindow.add(sendPacket);
                     System.out.println("[CLIENT]: Sent packet with len: " + PacketData.getLen(sendPacket));
                     delayForSimulation(1000);   //time in milliseconds for simulation
@@ -77,8 +78,6 @@ public class Client {
                         }
                     }
                 }
-
-
         }
         //Send the End of File packet, signalling the end of the stream
         sendPacket = packetGenerator.getEoFPacket();
@@ -91,6 +90,7 @@ public class Client {
         System.out.println("[CLIENT]: [RESENDING] : " + PacketData.getSeqNo(datagramPacket) + " /" + totalPackets);
         try {
             clientSocket.send(datagramPacket);
+            packetWindow.add(sendPacket);
         } catch ( IOException x ) {
             x.printStackTrace();
         }
