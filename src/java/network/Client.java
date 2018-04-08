@@ -10,7 +10,7 @@ import packet.*;
 public class Client {
     static final String HOSTNAME = "localhost";
     private InetAddress IPAddress;
-
+    private Proxy proxy = new Proxy();
     private DatagramSocket clientSocket;
     private DatagramPacket responsePacket; //response from server
     private DatagramPacket sendPacket; // packet to send to server
@@ -59,27 +59,22 @@ public class Client {
 
         while(packetGenerator.hasMoreData()) {
 
+    			while(!packetWindow.isFull() && packetGenerator.hasMoreData()) {
+                sendPacket = packetGenerator.getPacketToSend();
+                sendPacketFromClient(proxy.interfere(sendPacket));
+                //packetWindow.add(sendPacket);
+                System.out.println("[CLIENT]: Sent packet with len: " + PacketData.getLen(sendPacket));
+                delayForSimulation(1000);   //time in milliseconds for simulation
+             }
 
-
-                //sendPacket = packetGenerator.getPacketToSend();
-
-                 while(!packetWindow.isFull() && packetGenerator.hasMoreData()) {
-                    sendPacket = packetGenerator.getPacketToSend();
-                    sendPacketFromClient(sendPacket);
-                    //packetWindow.add(sendPacket);
-                    System.out.println("[CLIENT]: Sent packet with len: " + PacketData.getLen(sendPacket));
-                    delayForSimulation(1000);   //time in milliseconds for simulation
-                 }
-
-                while(packetWindow.hasPackets()) {
-                    if(!waitForResponsePacket()) {
-                        for(int i = 0; i < packetWindow.size(); i++) {
-                            resendPacketFromClient(packetWindow.get(i));
-                            System.out.println("Resending...");
-                        }
+            while(packetWindow.hasPackets()) {
+                if(!waitForResponsePacket()) {
+                    for(int i = 0; i < packetWindow.size(); i++) {
+                        resendPacketFromClient(packetWindow.get(i));
+                        System.out.println("Resending...");
                     }
                 }
-
+            }
         }
 
         clientSocket.close();

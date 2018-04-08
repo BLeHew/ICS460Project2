@@ -1,12 +1,17 @@
 package network;
 import java.io.*;
 import java.net.*;
+import java.util.LinkedList;
 
 import generators.*;
 import packet.*;
 
 public class Server {
     private static final String HOSTNAME = "localhost";
+    private static final int PACKETSIZE = 512;
+    private static final int PACKETWINDOWSIZE = 2;
+    private int expectedPacketNo = 1; //the first packet should have seqNo == 1
+    private LinkedList<DatagramPacket> parkingLot = new LinkedList<DatagramPacket>();
     private InetAddress IPAddress;
 	private DatagramSocket serverSocket;
 	private DatagramPacket request;
@@ -15,7 +20,7 @@ public class Server {
 	private int startOffset = 0;
 	private FileOutputStream fileStreamOut;
 	private PacketGenerator packetGenerator;
-	private byte[] receiveData = new byte[512];
+	private byte[] receiveData = new byte[PACKETSIZE];
 
 	private int dataLength = receiveData.length - Packet.DATAHEADERSIZE;
 
@@ -37,35 +42,49 @@ public class Server {
 	private void runWork() {
 	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
-
-        packetWindow = new PacketWindow(2);
-
+        packetWindow = new PacketWindow(PACKETWINDOWSIZE);
         packetGenerator = new PacketGenerator(receiveData.length);
-
-
 
         while (true) {
 
             while(!packetWindow.isFull()) {
-
                 request = packetGenerator.getResponsePacket(receiveData.length);
-
                 receivePacketIntoSocket(request);
                 System.out.println("Packet length: " + PacketData.getLen(request));
                 System.out.print("[Server]: ");
-                packetWindow.add(request);
-
+                
+                //for each element in the parking lot, is it the next expected packet? 
+                for (DatagramPacket ele : parkingLot) {
+                		System.out.println("Checking the parking lot");
+                		if (PacketData.getSeqNo(ele) == expectedPacketNo ) {
+                			packetWindow.add(ele);
+                			parkingLot.remove(ele);
+                			expectedPacketNo = PacketData.getSeqNo(ele) + 1;
+                		}
+                		if (packetWindow.isFull()) {
+                				packetWindow.print();
+                            writeDataToStream(packetWindow);
+                            packetWindow.clear();
+                		}
+                }
+                //if the packet just received is the expected packet
+                if (PacketData.getSeqNo(request) == expectedPacketNo) {
+                    packetWindow.add(request);
+                    expectedPacketNo = PacketData.getSeqNo(request) + 1;
+                }
+                else{
+                		parkingLot.add(request);	
+                }
                 printPacketInfo();
                 respondPositive();
-
             }
             packetWindow.print();
-
             writeDataToStream(packetWindow);
             packetWindow.clear();
         }
 	}
 
+	
     private void writeDataToStream(PacketWindow pw) {
         pw.print();
         for(int i = 0; i < pw.size(); i++) {

@@ -141,15 +141,15 @@ public class Proxy {
 		int rand1 = randomNumberGenerator(100);
 		int rand2 = randomNumberGenerator(10);
 		if(rand1 <= Driver.INTERFERENCE_PERCENTAGE) {
-			 if(rand2<=3) {
- 					packet = changeByteInPacket(packet);
-			 }else if (rand2 > 3 && rand2 <=6) {
- 					packet = dropByteFromPacket(packet);
-			 }else if (rand2 > 6 && rand2 <= 8){
+//			 if(rand2<=3) {
+// 					packet = changeByteInPacket(packet);
+//			 }else if (rand2 > 3 && rand2 <=6) {
+// 					packet = dropByteFromPacket(packet);
+//			 }else if (rand2 > 6 && rand2 <= 8){
  					packet = makePacketDisappear(packet);
- 			 }else {
- 				 	packet = changeChecksumToBad(packet);
- 			 }
+// 			 }else {
+// 				 	packet = changeChecksumToBad(packet);
+// 			 }
 	 	}
 	 	return packet;
 	}
@@ -184,6 +184,7 @@ public class Proxy {
 	///Simulate a dropped packet. 
 	private DatagramPacket makePacketDisappear(DatagramPacket packet){
 		packet.setPort(Driver.SERVERPORT+10);
+		System.out.println("PROXY HAS INTERFERED WITH PACKET's PORT");
 		return packet;
 	}
 }
