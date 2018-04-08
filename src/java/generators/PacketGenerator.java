@@ -35,9 +35,6 @@ public class PacketGenerator {
 
     public DatagramPacket getPacketToSend() {
 
-        if(!hasMoreData()) {
-            return null;
-        }
         if(dataLeft() < packetSize) {
             buffer = new byte[dataLeft()];
             packetSize = dataLeft();
@@ -58,29 +55,36 @@ public class PacketGenerator {
 
 
         DatagramPacket p = new DatagramPacket(temp, temp.length, ipAddress, serverPort);
-        System.out.println("In packet generator: creating packet with len: " + PacketData.getLen(p));
+
         return  p;
 
     }
     public int nextPacketSize() {
         return packetSize;
     }
+    public DatagramPacket getEoFPacket() {
+        seqNo++;
+        packet.setSeqno(seqNo);
+        packet.setLen((short) 9999);
+
+        byte[] temp = packet.getPacketAsArrayOfBytes();
+
+
+
+        return new DatagramPacket(temp,temp.length,ipAddress,serverPort);
+    }
     public DatagramPacket getInitialPacket() {
-        return new DatagramPacket(buffer,packetSize);
+        return new DatagramPacket(new byte[packetSize],packetSize);
     }
     public DatagramPacket getResponsePacket(int size) {
-        byte[] tempBuffer = new byte[size];
-        return new DatagramPacket(tempBuffer,tempBuffer.length);
+        return new DatagramPacket(new byte[size],size);
     }
     public DatagramPacket getAckPacket(DatagramPacket p) {
-        int otherAckNo = PacketData.getAckNo(p);
-        short otherCkSum = PacketData.getCkSum(p);
 
-        packet.setCksum(otherCkSum);
-        packet.setAckno(otherAckNo);
-        //packet.setLen(Packet.ACKPACKETHEADERSIZE);
+        packet.setCksum(PacketData.getCkSum(p));
+        packet.setAckno(PacketData.getAckNo(p));
 
-        return new DatagramPacket(packet.getPacketAsArrayOfBytes(), Packet.ACKPACKETHEADERSIZE);
+        return new DatagramPacket(packet.getPacketAsArrayOfBytes(), Packet.ACKPACKETHEADERSIZE,p.getAddress(),p.getPort());
     }
     /**
      *

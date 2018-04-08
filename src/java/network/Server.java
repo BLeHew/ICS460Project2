@@ -38,68 +38,63 @@ public class Server {
 	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
 
-        packetWindow = new PacketWindow(2);
+        packetWindow = new PacketWindow(10);
 
         packetGenerator = new PacketGenerator(receiveData.length);
 
+        int i = 0;
 
+        do {
 
-        while (true) {
+            request = packetGenerator.getResponsePacket(receiveData.length);
+            receivePacketIntoSocket(request);
 
-            while(!packetWindow.isFull()) {
-
-                request = packetGenerator.getResponsePacket(receiveData.length);
-
-                receivePacketIntoSocket(request);
-                System.out.println("Packet length: " + PacketData.getLen(request));
-                System.out.print("[Server]: ");
-                packetWindow.add(request);
-
-                printPacketInfo();
-                respondPositive();
+            if ( packetWindow.isFull() || PacketData.getLen(request) == 0 ) {
+                packetWindow.print();
+                writeDataToStream(packetWindow);
+                packetWindow.clear();
 
             }
-            packetWindow.print();
+            if ( i % 3 == 0 ) {
+                packetWindow.add(request);
+                printPacketInfo();
+                respondPositive();
+            }
+            i++ ;
 
-            writeDataToStream(packetWindow);
-            packetWindow.clear();
-        }
-	}
+        } while ( true );
+    }
 
     private void writeDataToStream(PacketWindow pw) {
-        pw.print();
         for(int i = 0; i < pw.size(); i++) {
-                adjustDataLength(PacketData.getLen(pw.get(i)));
-                writeDataToStream(pw.get(i).getData());
+                if(pw.get(i) != null) {
+                    adjustDataLength(PacketData.getLen(pw.get(i)));
+                    writeDataToStream(pw.get(i).getData());
+                }
             }
 
         }
     private void adjustDataLength(short len) {
-        System.out.println("len: " + len);
-        System.out.println("len - Packet.Dataheadersize: " + (len - Packet.DATAHEADERSIZE));
-	    //if(len - Packet.DATAHEADERSIZE < dataLength || len > dataLength) {
-
+	    if(len - Packet.DATAHEADERSIZE < dataLength || len > dataLength) {
             dataLength = len - Packet.DATAHEADERSIZE;
-        //}
+        }
     }
 
     private void respondPositive() {
 	    response = packetGenerator.getAckPacket(request);
-        response.setAddress(request.getAddress());
-	    response.setPort(request.getPort());
 
 	    try {
             serverSocket.send(response);
-            System.out.println("[SERVER]: Packet sent with ackNo of: " + PacketData.getAckNo(response));
+            System.out.println("[SERVER]:Ack Packet sent with ackNo of: " + PacketData.getAckNo(response));
         } catch ( IOException x ) {
             x.printStackTrace();
         }
 	}
 	private boolean verifyPacket() {
-			boolean retval = PacketData.getCkSum(request) == Packet.CHECKSUMGOOD; //TODO method to calculate checksum from data, match?
+			//boolean retval =  //TODO method to calculate checksum from data, match?
 			//System.out.println("[SERVER]: CHECKSUM IS GOOD?: " + retval );
 			//System.out.println("[SERVER]: Packet is verified.");
-			return retval;
+			return PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
 	}
 	private void printPacketInfo() {
         System.out.println("\n[SERVER]: PACKET RECEIVED. INFO: \n"
@@ -124,6 +119,7 @@ public class Server {
     }
     private void receivePacketIntoSocket(DatagramPacket p) {
         try {
+            //serverSocket.setSoTimeout(10000);
             serverSocket.receive(p);
         } catch ( IOException x ) {
             System.err.println("[SERVER] Error receiving packet into socket.");

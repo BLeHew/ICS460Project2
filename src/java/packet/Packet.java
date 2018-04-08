@@ -20,7 +20,10 @@ public class Packet {
     public Packet() {}; // empty constructor
 
     public byte[] generateHeaderAsArrayOfBytes() {
-        if(data != null) {
+        if(len == 9999) {
+            len = 0;
+        }
+        else if(data != null) {
             len = (short) (DATAHEADERSIZE + data.length);
         }
         else {

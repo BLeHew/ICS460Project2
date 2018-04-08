@@ -20,26 +20,12 @@ public class PacketWindow {
     public void add(DatagramPacket p) {
         int index = (PacketData.getSeqNo(p) - 1) % size;
 
-        DatagramPacket copy = new DatagramPacket(p.getData(),p.getLength());
+        DatagramPacket copy = new DatagramPacket(p.getData(),p.getLength(),p.getAddress(),p.getPort());
 
         if(packets[index] == null) {
             packets[index] = copy;
-
-            System.out.println("Length of P: " + PacketData.getLen(copy));
-            System.out.println("index: " + index);
-            System.out.print("Packets[0]: ");
-            System.out.println(packets[0] == null ? "null" : PacketData.getLen(packets[0]) );
-            System.out.print("Packets[1]: ");
-            System.out.println(packets[1] == null ? "null" : PacketData.getLen(packets[1]) );
-            /*
-            System.out.print("Packets[2]: ");
-            System.out.println(packets[2] == null ? "null" : PacketData.getLen(packets[2]) );
-            System.out.print("Packets[3]: ");
-            System.out.println(packets[3] == null ? "null" : PacketData.getLen(packets[3]) );
-            */
-             numPackets++;
+            numPackets++;
           }
-
     }
     public boolean hasMissingPackets() {
         int i = 0;
@@ -61,15 +47,10 @@ public class PacketWindow {
         return size;
     }
     public boolean hasPackets() {
-        int i = 0;
-        for(; i < size; i++) {
-            if(!(packets[i] == null)) {
-                return true;
-            }
-        }
-        return false;
+        return numPackets > 0;
     }
     public DatagramPacket get(int index) {
+
         return packets[index];
     }
     public void remove(DatagramPacket p) {
@@ -87,20 +68,18 @@ public class PacketWindow {
         }
     }
     private boolean isEmpty() {
-        int i = 0;
-        for(; i < size; i++) {
-            if(!(packets[i] == null)) {
-                return false;
-            }
-        }
-        return true;
+        return numPackets < 1;
     }
+
     public void print() {
         System.out.print("PacketWindow packets : ");
         for(DatagramPacket p : packets) {
-            System.out.print("len: " + PacketData.getLen(p));
-            System.out.print(" seqNo: " + PacketData.getSeqNo(p) + "\t");
+            if(p != null) {
+                System.out.print("len: " + PacketData.getLen(p));
+                System.out.print(" seqNo: " + PacketData.getSeqNo(p) + "\t");
+            }
         }
         System.out.print("\n");
     }
+
 }

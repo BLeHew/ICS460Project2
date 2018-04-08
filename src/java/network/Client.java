@@ -16,13 +16,12 @@ public class Client {
     private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(2);
+    private PacketWindow packetWindow = new PacketWindow(10);
 
     private PacketGenerator packetGenerator;
 
     private Scanner inFromUser = new Scanner(System.in);
 
-    private int packetNum = 0;
     private int totalPackets;
     private int startOffset = 0;
     private int packetSize;
@@ -51,7 +50,7 @@ public class Client {
         while(!createFileStream(inFromUser.nextLine()));
 
         //TODO allow user to designate the size of the packets to be sent
-        packetSize = 500;
+        packetSize = 50;
 
         packetGenerator = new PacketGenerator(fileStreamIn, packetSize, IPAddress, Driver.SERVERPORT);
 
@@ -59,14 +58,11 @@ public class Client {
 
         while(packetGenerator.hasMoreData()) {
 
-
-
-                //sendPacket = packetGenerator.getPacketToSend();
-
                  while(!packetWindow.isFull() && packetGenerator.hasMoreData()) {
+
                     sendPacket = packetGenerator.getPacketToSend();
                     sendPacketFromClient(sendPacket);
-                    //packetWindow.add(sendPacket);
+                    packetWindow.add(sendPacket);
                     System.out.println("[CLIENT]: Sent packet with len: " + PacketData.getLen(sendPacket));
                     delayForSimulation(1000);   //time in milliseconds for simulation
                  }
@@ -74,19 +70,23 @@ public class Client {
                 while(packetWindow.hasPackets()) {
                     if(!waitForResponsePacket()) {
                         for(int i = 0; i < packetWindow.size(); i++) {
-                            resendPacketFromClient(packetWindow.get(i));
-                            System.out.println("Resending...");
+                            if(packetWindow.get(i) != null) {
+                                resendPacketFromClient(packetWindow.get(i));
+                            }
                         }
                     }
                 }
 
+
         }
+        sendPacket = packetGenerator.getEoFPacket();
+        sendPacketFromClient(sendPacket);
 
         clientSocket.close();
         System.out.println("[CLIENT] Client socket closed");
     }
     private void resendPacketFromClient(DatagramPacket datagramPacket) {
-        System.out.println("[CLIENT]: [RESENDING] : " + PacketData.getSeqNo(datagramPacket));
+        System.out.println("[CLIENT]: [RESENDING] : " + PacketData.getSeqNo(datagramPacket) + " /" + totalPackets);
         try {
             clientSocket.send(datagramPacket);
         } catch ( IOException x ) {
@@ -101,26 +101,27 @@ public class Client {
         }
     }
     private boolean waitForResponsePacket() {
+        System.out.println("[CLIENT]: ....waiting for response packet...");
         try {
             	responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
             	clientSocket.setSoTimeout(2000);
         		clientSocket.receive(responsePacket);
         		packetWindow.remove(responsePacket);
-        		System.out.println("[CLIENT] Ack packet received with ack of: " + PacketData.getAckNo(responsePacket));
+        		System.out.println("[CLIENT]: Ack packet received with ack of: " + PacketData.getAckNo(responsePacket));
         		return true;
         } catch ( IOException x ) {
             return false;
         }
     }
     private void sendPacketFromClient(DatagramPacket packetToSend) {
-        /*
+
         System.out.println("[CLIENT]: [SENDING]: " + PacketData.getSeqNo(sendPacket) + "/" + totalPackets);
         System.out.println("[CLIENT]: PACKET_OFFSET: " + startOffset + " - END: "
                                                    + (startOffset += sendPacket.getLength())
                                                    + "\n");
         System.out.println("[CLIENT]:  packet ACK: " + PacketData.getAckNo(sendPacket));
         System.out.println("[CLIENT]:  packet Len: " + PacketData.getLen(sendPacket));
-        */
+
         try {
             clientSocket.send(sendPacket);
             //Proxy proxy = new Proxy();
