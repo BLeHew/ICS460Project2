@@ -16,7 +16,7 @@ public class Client {
     private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(10);
+    private PacketWindow packetWindow = new PacketWindow(500);
 
     private PacketGenerator packetGenerator;
 
@@ -58,6 +58,7 @@ public class Client {
 
         while(packetGenerator.hasMoreData()) {
 
+                 //keep sending packet while the packetwindow isn't full and the packetgenerator has more packets to send.
                  while(!packetWindow.isFull() && packetGenerator.hasMoreData()) {
 
                     sendPacket = packetGenerator.getPacketToSend();
@@ -79,6 +80,7 @@ public class Client {
 
 
         }
+        //Send the End of File packet, signalling the end of the stream
         sendPacket = packetGenerator.getEoFPacket();
         sendPacketFromClient(sendPacket);
 

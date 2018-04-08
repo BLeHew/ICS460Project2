@@ -38,7 +38,7 @@ public class Server {
 	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
 
-        packetWindow = new PacketWindow(10);
+        packetWindow = new PacketWindow(500);
 
         packetGenerator = new PacketGenerator(receiveData.length);
 
