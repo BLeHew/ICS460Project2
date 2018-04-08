@@ -9,7 +9,7 @@ import packet.*;
 public class Server {
     private static final String HOSTNAME = "localhost";
     private static final int PACKETSIZE = 512;
-    private static final int PACKETWINDOWSIZE = 2;
+    private static final int PACKETWINDOWSIZE = 10;
     private int expectedPacketNo = 1; //the first packet should have seqNo == 1
     private LinkedList<DatagramPacket> parkingLot = new LinkedList<DatagramPacket>();
     private InetAddress IPAddress;
@@ -57,6 +57,7 @@ public class Server {
                 for (DatagramPacket ele : parkingLot) {
                 		System.out.println("Checking the parking lot");
                 		if (PacketData.getSeqNo(ele) == expectedPacketNo ) {
+                			System.out.println("parking lot match found");
                 			packetWindow.add(ele);
                 			parkingLot.remove(ele);
                 			expectedPacketNo = PacketData.getSeqNo(ele) + 1;
@@ -69,7 +70,8 @@ public class Server {
                 }
                 //if the packet just received is the expected packet
                 if (PacketData.getSeqNo(request) == expectedPacketNo) {
-                    packetWindow.add(request);
+                    DatagramPacket copy = new DatagramPacket(request.getData(), request.getLength());
+                    packetWindow.add(copy);
                     expectedPacketNo = PacketData.getSeqNo(request) + 1;
                 }
                 else{
@@ -78,7 +80,7 @@ public class Server {
                 printPacketInfo();
                 respondPositive();
             }
-            packetWindow.print();
+          //  packetWindow.print();
             writeDataToStream(packetWindow);
             packetWindow.clear();
         }
@@ -88,8 +90,8 @@ public class Server {
     private void writeDataToStream(PacketWindow pw) {
         pw.print();
         for(int i = 0; i < pw.size(); i++) {
-                adjustDataLength(PacketData.getLen(pw.get(i)));
-                writeDataToStream(pw.get(i).getData());
+                adjustDataLength(PacketData.getLen(pw.getAndRemove(i)));
+                writeDataToStream(pw.getAndRemove(i).getData());
             }
 
         }
@@ -97,7 +99,6 @@ public class Server {
         System.out.println("len: " + len);
         System.out.println("len - Packet.Dataheadersize: " + (len - Packet.DATAHEADERSIZE));
 	    //if(len - Packet.DATAHEADERSIZE < dataLength || len > dataLength) {
-
             dataLength = len - Packet.DATAHEADERSIZE;
         //}
     }
@@ -109,7 +110,7 @@ public class Server {
 
 	    try {
             serverSocket.send(response);
-            System.out.println("[SERVER]: Packet sent with ackNo of: " + PacketData.getAckNo(response));
+            System.out.println("[SERVER]: Packet sent with AckNo of: " + PacketData.getAckNo(response));
         } catch ( IOException x ) {
             x.printStackTrace();
         }

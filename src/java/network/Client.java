@@ -9,14 +9,17 @@ import packet.*;
 
 public class Client {
     static final String HOSTNAME = "localhost";
-    private InetAddress IPAddress;
+    private static final int PACKETWINDOWSIZE = 10;
+    private static final int PACKETSIZE = 500;
+
+    public static InetAddress IPADDRESS;
     private Proxy proxy = new Proxy();
     private DatagramSocket clientSocket;
     private DatagramPacket responsePacket; //response from server
     private DatagramPacket sendPacket; // packet to send to server
 
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(2);
+    private PacketWindow packetWindow = new PacketWindow(PACKETWINDOWSIZE);
 
     private PacketGenerator packetGenerator;
 
@@ -51,9 +54,9 @@ public class Client {
         while(!createFileStream(inFromUser.nextLine()));
 
         //TODO allow user to designate the size of the packets to be sent
-        packetSize = 500;
+        packetSize = PACKETSIZE;
 
-        packetGenerator = new PacketGenerator(fileStreamIn, packetSize, IPAddress, Driver.SERVERPORT);
+        packetGenerator = new PacketGenerator(fileStreamIn, packetSize, IPADDRESS, Driver.SERVERPORT);
 
         totalPackets = packetGenerator.packetsLeft() + 1; //get number of packets to send
 
@@ -62,7 +65,7 @@ public class Client {
     			while(!packetWindow.isFull() && packetGenerator.hasMoreData()) {
                 sendPacket = packetGenerator.getPacketToSend();
                 sendPacketFromClient(proxy.interfere(sendPacket));
-                //packetWindow.add(sendPacket);
+                packetWindow.add(sendPacket);
                 System.out.println("[CLIENT]: Sent packet with len: " + PacketData.getLen(sendPacket));
                 delayForSimulation(1000);   //time in milliseconds for simulation
              }
@@ -70,23 +73,27 @@ public class Client {
             while(packetWindow.hasPackets()) {
                 if(!waitForResponsePacket()) {
                     for(int i = 0; i < packetWindow.size(); i++) {
-                        resendPacketFromClient(packetWindow.get(i));
-                        System.out.println("Resending...");
+                    		packetWindow.size();
+                    		try {
+                				resendPacketFromClient(packetWindow.getAndRemove(i));
+                            System.out.println("Resending...");
+                    		}catch (Exception e){
+                    			//nothin. Keep going
+                    		}
                     }
                 }
             }
         }
-
         clientSocket.close();
         System.out.println("[CLIENT] Client socket closed");
     }
-    private void resendPacketFromClient(DatagramPacket datagramPacket) {
+    private void resendPacketFromClient(DatagramPacket p) {
+        DatagramPacket datagramPacket = new DatagramPacket(p.getData(), p.getLength(), Client.IPADDRESS, Driver.SERVERPORT);
         System.out.println("[CLIENT]: [RESENDING] : " + PacketData.getSeqNo(datagramPacket));
-        try {
-            clientSocket.send(datagramPacket);
-        } catch ( IOException x ) {
-            x.printStackTrace();
-        }
+        sendPacketFromClient(proxy.interfere(datagramPacket));
+		packetWindow.add(sendPacket);
+		System.out.println("[CLIENT]: ReSent packet with len: " + PacketData.getLen(sendPacket));
+		delayForSimulation(1000);   //time in milliseconds for simulation
     }
     private void delayForSimulation(int i) {
         try {
@@ -136,7 +143,7 @@ public class Client {
     }
     private void assignIPAddress() {
         try {
-            IPAddress = InetAddress.getByName(HOSTNAME);
+            IPADDRESS = InetAddress.getByName(HOSTNAME);
         } catch ( UnknownHostException x ) {
             x.printStackTrace();
         }

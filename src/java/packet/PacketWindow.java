@@ -3,6 +3,9 @@ package packet;
 import java.net.*;
 import java.util.*;
 
+import network.Client;
+import network.Driver;
+
 
 public class PacketWindow {
 
@@ -20,17 +23,17 @@ public class PacketWindow {
     public void add(DatagramPacket p) {
         int index = (PacketData.getSeqNo(p) - 1) % size;
 
-        DatagramPacket copy = new DatagramPacket(p.getData(),p.getLength());
-
+      //  DatagramPacket copy = new DatagramPacket(p.getData(),p.getLength());
+        DatagramPacket copy = new DatagramPacket(p.getData(), p.getLength());
         if(packets[index] == null) {
             packets[index] = copy;
 
             System.out.println("Length of P: " + PacketData.getLen(copy));
             System.out.println("index: " + index);
             System.out.print("Packets[0]: ");
-            System.out.println(packets[0] == null ? "null" : PacketData.getLen(packets[0]) );
+            System.out.println(packets[0] == null ? "null" : PacketData.getLen(packets[0]));
             System.out.print("Packets[1]: ");
-            System.out.println(packets[1] == null ? "null" : PacketData.getLen(packets[1]) );
+            System.out.println(packets[1] == null ? "null" : PacketData.getLen(packets[1]));
             /*
             System.out.print("Packets[2]: ");
             System.out.println(packets[2] == null ? "null" : PacketData.getLen(packets[2]) );
@@ -39,7 +42,6 @@ public class PacketWindow {
             */
              numPackets++;
           }
-
     }
     public boolean hasMissingPackets() {
         int i = 0;
@@ -69,8 +71,10 @@ public class PacketWindow {
         }
         return false;
     }
-    public DatagramPacket get(int index) {
-        return packets[index];
+    public DatagramPacket getAndRemove(int index) {
+    		System.out.println("Resending packet from packetwindow @ " + index);
+        DatagramPacket copy = new DatagramPacket(packets[index].getData(), packets[index].getLength());
+    		return packets[index];
     }
     public void remove(DatagramPacket p) {
         int otherAckno = PacketData.getAckNo(p);
