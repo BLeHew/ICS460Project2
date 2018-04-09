@@ -2,6 +2,7 @@ package generators;
 
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 import helpers.*;
 import packet.*;
@@ -17,12 +18,18 @@ public class PacketGenerator {
     private int seqNo = 1;
     private int ackNo = 1;
 
-    private int fileSize;
+    public PacketGenerator(PacketGenerator other) {
+        this.dataLength = other.dataLength;
+        this.fileStreamIn = other.fileStreamIn;
+        this.ipAddress = other.ipAddress;
+        this.port = other.port;
+        this.buffer = other.buffer;
+    }
 
-    public PacketGenerator(FileInputStream fis, int packetSize, InetAddress iPAddress, int port) {
-        this.dataLength = packetSize;
+    public PacketGenerator(FileInputStream fis, int dataLength, InetAddress iPAddress, int port) {
+        this.dataLength = dataLength;
         fileStreamIn = fis;
-        buffer = new byte[packetSize];
+        buffer = new byte[dataLength];
         this.ipAddress = iPAddress;
         this.port = port;
     }
@@ -49,18 +56,13 @@ public class PacketGenerator {
 
         seqNo += 1;
 
-        byte[] temp = packet.getPacketAsArrayOfBytes();
-
-        byte[] ckSum = CheckSumTools.getChkSumInBytes(temp);
+        byte[] temp = Arrays.copyOf(packet.getPacketAsArrayOfBytes(),dataLength + Packet.DATAHEADERSIZE);
+        byte[] ckSum = Arrays.copyOf(CheckSumTools.getChkSumInBytes(temp),2);
 
         temp[0] = ckSum[0];
         temp[1] = ckSum[1];
 
-        return new DatagramPacket(temp, temp.length, ipAddress, port);
-
-    }
-    public int nextPacketSize() {
-        return dataLength;
+        return new DatagramPacket(temp, temp.length,ipAddress,port);
     }
     public DatagramPacket getEoFPacket() {
         seqNo++;

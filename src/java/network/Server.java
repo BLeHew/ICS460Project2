@@ -105,8 +105,8 @@ public class Server {
 	}
 	private boolean verifyPacket() {
 			//boolean retval =  //TODO method to calculate checksum from data, match?
-	        //System.out.print("Check sum of packet: " + PacketData.getCkSum(request));
-			//System.out.println("[SERVER]: Expected checksum: " + CheckSumTools.getChkSum(request));
+	        System.out.print("[SERVER]: ");
+	        System.out.println(CheckSumTools.testChkSum(request) ? "Packet is valid" : "Packet is invalid");
 			return CheckSumTools.testChkSum(request);
 	}
 	private void printPacketInfo() {
@@ -132,7 +132,6 @@ public class Server {
     }
     private void receivePacketIntoSocket(DatagramPacket p) {
         try {
-            //serverSocket.setSoTimeout(10000);
             serverSocket.receive(p);
         } catch ( IOException x ) {
             System.err.println("[SERVER] Error receiving packet into socket.");

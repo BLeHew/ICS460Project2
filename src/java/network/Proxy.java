@@ -18,7 +18,7 @@ public class Proxy {
         r.setSeed(6000);
     }
 
-    protected DatagramPacket interfere(DatagramPacket packet) {
+    public DatagramPacket interfere(DatagramPacket packet) {
 
         byte[] temp = Arrays.copyOf(packet.getData(), packet.getLength());
 
