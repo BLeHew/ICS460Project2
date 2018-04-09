@@ -50,10 +50,8 @@ public class Proxy {
         byte[] data = packet.getData();
         data[13]=(byte)(r.nextInt(1));
         packet.setData(data);
-        PacketData.setCkSumBad(packet);
         return packet;
     }
-
     private DatagramPacket changeChecksumToBad(DatagramPacket packet) {
         PacketData.setCkSumBad(packet); //TODO actually use checksums.
         return packet;
@@ -63,7 +61,6 @@ public class Proxy {
     private DatagramPacket dropByteFromPacket(DatagramPacket packet) {
         byte[] missingData = new byte[packet.getData().length - 1];
         packet.setData(missingData);
-        PacketData.setCkSumBad(packet);
         return packet;
     }
 

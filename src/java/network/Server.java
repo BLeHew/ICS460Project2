@@ -3,6 +3,7 @@ import java.io.*;
 import java.net.*;
 
 import generators.*;
+import helpers.*;
 import packet.*;
 
 public class Server {
@@ -104,8 +105,9 @@ public class Server {
 	}
 	private boolean verifyPacket() {
 			//boolean retval =  //TODO method to calculate checksum from data, match?
-			System.out.println("[SERVER]: CHECKSUM IS GOOD?: " + PacketData.getCkSum(request) );
-			return PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
+	        //System.out.print("Check sum of packet: " + PacketData.getCkSum(request));
+			//System.out.println("[SERVER]: Expected checksum: " + CheckSumTools.getChkSum(request));
+			return CheckSumTools.testChkSum(request);
 	}
 	private void printPacketInfo() {
         System.out.println("\n[SERVER]: PACKET RECEIVED. INFO: \n"

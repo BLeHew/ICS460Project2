@@ -10,9 +10,10 @@ public class PacketHeader {
         data = new byte[Packet.DATAHEADERSIZE];
         this.packet = packet;
 
-        addCheckSum();
+
         addLen();
         addAckNo();
+        addCheckSum();
 
         if(packet.getData() != null) {
             addSeqNo();
@@ -23,9 +24,8 @@ public class PacketHeader {
         return data;
     }
     private void addCheckSum() {
-        byte[] checkSum = Converter.toBytes(packet.getCksum());
-        data[0] = checkSum[0];
-        data[1] = checkSum[1];
+        data[0] = 0;
+        data[1] = 0;
     }
     private void addLen() {
         byte[] length = Converter.toBytes(packet.getLen());

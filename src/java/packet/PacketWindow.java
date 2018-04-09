@@ -22,11 +22,12 @@ public class PacketWindow {
     public void add(DatagramPacket p) {
         int index = (PacketData.getSeqNo(p) - 1) % size;
 
-        byte[] temp = Arrays.copyOf(p.getData(), p.getLength());
-
-        DatagramPacket copy = new DatagramPacket(temp,temp.length,p.getAddress(),p.getPort());
-
         if(packets[index] == null) {
+            //only create the copy packet if needed
+            byte[] temp = Arrays.copyOf(p.getData(), p.getLength());
+
+            DatagramPacket copy = new DatagramPacket(temp,temp.length,p.getAddress(),p.getPort());
+
             packets[index] = copy;
             numPackets++;
             dataLength += (PacketData.getLen(copy) - 12);

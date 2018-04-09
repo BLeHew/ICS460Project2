@@ -3,6 +3,7 @@ package generators;
 import java.io.*;
 import java.net.*;
 
+import helpers.*;
 import packet.*;
 
 public class PacketGenerator {
@@ -50,6 +51,11 @@ public class PacketGenerator {
 
         byte[] temp = packet.getPacketAsArrayOfBytes();
 
+        byte[] ckSum = CheckSumTools.getChkSumInBytes(temp);
+
+        temp[0] = ckSum[0];
+        temp[1] = ckSum[1];
+
         return new DatagramPacket(temp, temp.length, ipAddress, port);
 
     }
@@ -62,8 +68,10 @@ public class PacketGenerator {
         Packet p = new Packet(Packet.CHECKSUMGOOD,(short)0,ackNo,seqNo,new byte[0]);
 
         byte[] temp = p.getPacketAsArrayOfBytes();
+        byte[] ckSum = CheckSumTools.getChkSumInBytes(temp);
 
-
+        temp[0] = ckSum[0];
+        temp[1] = ckSum[1];
 
         return new DatagramPacket(temp,temp.length,ipAddress,port);
     }
