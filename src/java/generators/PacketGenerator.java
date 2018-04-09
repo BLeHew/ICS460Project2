@@ -6,83 +6,72 @@ import java.net.*;
 import packet.*;
 
 public class PacketGenerator {
-    private FileInputStream fileStreamIn;
+    private final FileInputStream fileStreamIn;
+    private final InetAddress ipAddress;
+    private final int port;
+
     private byte[] buffer;
-    private int packetSize;
+    private int dataLength;
 
     private int seqNo = 1;
     private int ackNo = 1;
 
-    private Packet packet;
     private int fileSize;
 
-    private InetAddress ipAddress;
-    private int serverPort;
-
-    public PacketGenerator(FileInputStream fis, int packetSize, InetAddress iPAddress, int serverPort) {
-        this.packetSize = packetSize;
+    public PacketGenerator(FileInputStream fis, int packetSize, InetAddress iPAddress, int port) {
+        this.dataLength = packetSize;
         fileStreamIn = fis;
         buffer = new byte[packetSize];
-        packet = new Packet();
         this.ipAddress = iPAddress;
-        this.serverPort = serverPort;
+        this.port = port;
     }
     public PacketGenerator(int packetSize) {
-        this.packetSize = packetSize;
+        this.dataLength = packetSize;
         buffer = new byte[packetSize];
-        packet = new Packet();
+        this.ipAddress = null;
+        this.port = -1;
+        this.fileStreamIn = null;
     }
 
     public DatagramPacket getPacketToSend() {
 
-        if(dataLeft() < packetSize) {
+        if(dataLeft() < dataLength) {
             buffer = new byte[dataLeft()];
-            packetSize = dataLeft();
+            dataLength = dataLeft();
         }
         readFileStreamIntoBuffer();
 
-        ackNo += packetSize + Packet.DATAHEADERSIZE;
+        ackNo += dataLength + Packet.DATAHEADERSIZE;
 
-        packet.setSeqno(seqNo);
+
+        Packet packet = new Packet(Packet.CHECKSUMGOOD, (short) (dataLength), ackNo, seqNo, buffer);
+
         seqNo += 1;
-        packet.setAckno(ackNo);
-
-        packet.setCksum(Packet.CHECKSUMGOOD);
-
-        packet.setData(buffer);
 
         byte[] temp = packet.getPacketAsArrayOfBytes();
 
-
-        DatagramPacket p = new DatagramPacket(temp, temp.length, ipAddress, serverPort);
-
-        return  p;
+        return new DatagramPacket(temp, temp.length, ipAddress, port);
 
     }
     public int nextPacketSize() {
-        return packetSize;
+        return dataLength;
     }
     public DatagramPacket getEoFPacket() {
         seqNo++;
-        packet.setSeqno(seqNo);
-        packet.setLen((short) 9999);
 
-        byte[] temp = packet.getPacketAsArrayOfBytes();
+        Packet p = new Packet(Packet.CHECKSUMGOOD,(short)0,ackNo,seqNo,new byte[0]);
+
+        byte[] temp = p.getPacketAsArrayOfBytes();
 
 
 
-        return new DatagramPacket(temp,temp.length,ipAddress,serverPort);
-    }
-    public DatagramPacket getInitialPacket() {
-        return new DatagramPacket(new byte[packetSize],packetSize);
+        return new DatagramPacket(temp,temp.length,ipAddress,port);
     }
     public DatagramPacket getResponsePacket(int size) {
         return new DatagramPacket(new byte[size],size);
     }
     public DatagramPacket getAckPacket(DatagramPacket p) {
-
-        packet.setCksum(PacketData.getCkSum(p));
-        packet.setAckno(PacketData.getAckNo(p));
+        Packet packet = new Packet(Packet.CHECKSUMGOOD,(short) 0, PacketData.getAckNo(p));
 
         return new DatagramPacket(packet.getPacketAsArrayOfBytes(), Packet.ACKPACKETHEADERSIZE,p.getAddress(),p.getPort());
     }
@@ -109,7 +98,7 @@ public class PacketGenerator {
     public int packetsLeft() {
         int numPacketsLeft = 0;
         try {
-            numPacketsLeft = fileStreamIn.available()/packetSize;
+            numPacketsLeft = fileStreamIn.available()/dataLength;
         } catch ( IOException x ) {
             x.printStackTrace();
         }
@@ -119,7 +108,7 @@ public class PacketGenerator {
         //Using 0 for the offset, since were already creating the header in the packet class
 
         try {
-            fileStreamIn.read(buffer,0, packetSize);
+            fileStreamIn.read(buffer,0, dataLength);
         } catch ( IOException x ) {
             x.printStackTrace();
         }

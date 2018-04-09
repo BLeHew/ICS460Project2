@@ -5,8 +5,6 @@ public class Driver {
 	//------------- public map for all nodes on network----
 	public final static int CLIENTPORT = 9875;
     public final static int SERVERPORT = 9876;
-//	public final static int SERVERPROXYPORT = 9877; //for the proxy class
-//	public final static int CLIENTPROXYPORT = 9878; // for the proxy class
     //--------------end of network map --------------------
 
     static Scanner userInput = new Scanner(System.in);

@@ -14,18 +14,28 @@ public class Client {
     private DatagramSocket clientSocket;
     private DatagramPacket responsePacket; //response from server
     private DatagramPacket sendPacket; // packet to send to server
-    private Proxy proxy = new Proxy(); 
 
+
+
+
+    //TODO allow user to designate the size of the packets to be sent
+    private int packetSize = 50;
+    private int timeOut = 2000; // time to timeout the client socket
     //TODO allow user to determine the size of the window
-    private PacketWindow packetWindow = new PacketWindow(500);
+    private int windowSize = 5;
 
+  //percentage of packets the client wants dropped, altered, or corrupted
+    private int interference = 80;
+
+    private PacketWindow packetWindow;
     private PacketGenerator packetGenerator;
+    private Proxy proxy;
 
     private Scanner inFromUser = new Scanner(System.in);
 
     private int totalPackets;
     private int startOffset = 0;
-    private int packetSize;
+
 
     private FileInputStream fileStreamIn;
 
@@ -50,12 +60,15 @@ public class Client {
 
         while(!createFileStream(inFromUser.nextLine()));
 
-        //TODO allow user to designate the size of the packets to be sent
-        packetSize = 500;
+
 
         packetGenerator = new PacketGenerator(fileStreamIn, packetSize, IPAddress, Driver.SERVERPORT);
 
         totalPackets = packetGenerator.packetsLeft() + 1; //get number of packets to send
+
+        packetWindow = new PacketWindow(windowSize);
+
+        proxy = new Proxy(interference);
 
         while(packetGenerator.hasMoreData()) {
 
@@ -63,9 +76,12 @@ public class Client {
                  while(!packetWindow.isFull() && packetGenerator.hasMoreData()) {
 
                     sendPacket = packetGenerator.getPacketToSend();
-                    sendPacketFromClient(proxy.interfere(sendPacket));
                     packetWindow.add(sendPacket);
+
+                    sendPacketFromClient(proxy.interfere(sendPacket));
+
                     System.out.println("[CLIENT]: Sent packet with len: " + PacketData.getLen(sendPacket));
+                    System.out.println("[CLIENT]: Sent packet with SeqNO: " + PacketData.getSeqNo(sendPacket));
                     delayForSimulation(1000);   //time in milliseconds for simulation
                  }
 
@@ -73,7 +89,7 @@ public class Client {
                     if(!waitForResponsePacket()) {
                         for(int i = 0; i < packetWindow.size(); i++) {
                             if(packetWindow.get(i) != null) {
-                                resendPacketFromClient(packetWindow.get(i));
+                                resendPacketFromClient(proxy.interfere(packetWindow.get(i)));
                             }
                         }
                     }
@@ -84,13 +100,12 @@ public class Client {
         sendPacketFromClient(sendPacket);
 
         clientSocket.close();
-        System.out.println("[CLIENT] Client socket closed");
+        System.out.println("\n[CLIENT] Client socket closed");
     }
-    private void resendPacketFromClient(DatagramPacket datagramPacket) {
-        System.out.println("[CLIENT]: [RESENDING] : " + PacketData.getSeqNo(datagramPacket) + " /" + totalPackets);
+    private void resendPacketFromClient(DatagramPacket p) {
+        System.out.println("[CLIENT]: [RESENDING] : " + PacketData.getSeqNo(p) + " /" + totalPackets);
         try {
-            clientSocket.send(datagramPacket);
-            packetWindow.add(sendPacket);
+            clientSocket.send(p);
         } catch ( IOException x ) {
             x.printStackTrace();
         }
@@ -106,28 +121,24 @@ public class Client {
         System.out.println("[CLIENT]: ....waiting for response packet...");
         try {
             	responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
-            	clientSocket.setSoTimeout(2000);
         		clientSocket.receive(responsePacket);
         		packetWindow.remove(responsePacket);
-        		System.out.println("[CLIENT]: Ack packet received with ack of: " + PacketData.getAckNo(responsePacket));
         		return true;
         } catch ( IOException x ) {
             return false;
         }
     }
     private void sendPacketFromClient(DatagramPacket packetToSend) {
-
+        /*
         System.out.println("[CLIENT]: [SENDING]: " + PacketData.getSeqNo(sendPacket) + "/" + totalPackets);
         System.out.println("[CLIENT]: PACKET_OFFSET: " + startOffset + " - END: "
                                                    + (startOffset += sendPacket.getLength())
                                                    + "\n");
         System.out.println("[CLIENT]:  packet ACK: " + PacketData.getAckNo(sendPacket));
         System.out.println("[CLIENT]:  packet Len: " + PacketData.getLen(sendPacket));
-
+        */
         try {
-            clientSocket.send(sendPacket);
-            //Proxy proxy = new Proxy();
-            //clientSocket.send(proxy.interfere(packetToSend));
+            clientSocket.send(packetToSend);
         }catch(IOException io) {
             System.err.println("[CLIENT]: Error in sending packet");
         }
@@ -152,6 +163,7 @@ public class Client {
     private void createSocket(int port) {
         try {
             clientSocket = new DatagramSocket(port);
+            clientSocket.setSoTimeout(timeOut);
             System.out.println("[CLIENT]: Client socket started on port: " + clientSocket.getLocalPort());
         }catch ( SocketException x ) {
         System.err.println("[CLIENT]: Problem on creating client socket.");

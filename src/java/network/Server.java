@@ -14,14 +14,15 @@ public class Server {
 
 	private int startOffset = 0;
 	private FileOutputStream fileStreamOut;
+
+
 	private PacketGenerator packetGenerator;
 	private byte[] receiveData = new byte[512];
+	private int windowSize = 5;
 
 	private int dataLength = receiveData.length - Packet.DATAHEADERSIZE;
 
 	private PacketWindow packetWindow;
-
-	//private int dataLength = receiveData.length - Packet.DATAHEADERSIZE;
 
 	public Server() {
 	    Runnable r = new Runnable() {
@@ -38,36 +39,45 @@ public class Server {
 	    createServerSocket(Driver.SERVERPORT);
         createFileStreamOut("receiveFile.txt");
 
-        packetWindow = new PacketWindow(500);
+        packetWindow = new PacketWindow(windowSize);
 
         packetGenerator = new PacketGenerator(receiveData.length);
 
-        int i = 0;
+        boolean keepGoing = true;
 
         do {
 
             request = packetGenerator.getResponsePacket(receiveData.length);
             receivePacketIntoSocket(request);
 
-            if ( packetWindow.isFull() || PacketData.getLen(request) == 0 ) {
-                packetWindow.print();
+            if (packetWindow.isFull()) {
                 writeDataToStream(packetWindow);
                 packetWindow.clear();
-
             }
-            if ( i % 3 == 0 ) {
+
+            if(verifyPacket()) {
                 packetWindow.add(request);
                 printPacketInfo();
                 respondPositive();
-            }
-            i++ ;
 
-        } while ( true );
+                if(PacketData.getLen(request) == 0 ) {
+                    writeDataToStream(packetWindow);
+                    keepGoing = false;
+                    break;
+                }
+
+            }
+
+
+        } while ( keepGoing );
+        serverSocket.close();
+        System.out.println("[SERVER]: Server socket closed");
     }
 
     private void writeDataToStream(PacketWindow pw) {
+        System.out.println("[SERVER]: writing " + pw.getDataLength() + " bytes to a file");
         for(int i = 0; i < pw.size(); i++) {
-                if(pw.get(i) != null) {
+                if(pw.get(i) != null && PacketData.getLen(pw.get(i)) != 0) {
                     adjustDataLength(PacketData.getLen(pw.get(i)));
                     writeDataToStream(pw.get(i).getData());
                 }
@@ -75,8 +85,10 @@ public class Server {
 
         }
     private void adjustDataLength(short len) {
-	    if(len - Packet.DATAHEADERSIZE < dataLength || len > dataLength) {
-            dataLength = len - Packet.DATAHEADERSIZE;
+        if(len > 0) {
+    	    if(len - Packet.DATAHEADERSIZE < dataLength) {
+                dataLength = len - Packet.DATAHEADERSIZE;
+            }
         }
     }
 
@@ -92,8 +104,7 @@ public class Server {
 	}
 	private boolean verifyPacket() {
 			//boolean retval =  //TODO method to calculate checksum from data, match?
-			//System.out.println("[SERVER]: CHECKSUM IS GOOD?: " + retval );
-			//System.out.println("[SERVER]: Packet is verified.");
+			System.out.println("[SERVER]: CHECKSUM IS GOOD?: " + PacketData.getCkSum(request) );
 			return PacketData.getCkSum(request) == Packet.CHECKSUMGOOD;
 	}
 	private void printPacketInfo() {

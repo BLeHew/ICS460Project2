@@ -8,23 +8,28 @@ public class PacketWindow {
 
     private DatagramPacket[] packets;
     private int numPackets;
-    private int size;
+    private final int size;
+    private int dataLength;
 
     private boolean hasPackets = false;
 
     public PacketWindow(int size) {
         this.size = size;
         packets = new DatagramPacket[size];
+        dataLength = 0;
 
     }
     public void add(DatagramPacket p) {
         int index = (PacketData.getSeqNo(p) - 1) % size;
 
-        DatagramPacket copy = new DatagramPacket(p.getData(),p.getLength(),p.getAddress(),p.getPort());
+        byte[] temp = Arrays.copyOf(p.getData(), p.getLength());
+
+        DatagramPacket copy = new DatagramPacket(temp,temp.length,p.getAddress(),p.getPort());
 
         if(packets[index] == null) {
             packets[index] = copy;
             numPackets++;
+            dataLength += (PacketData.getLen(copy) - 12);
           }
     }
     public boolean hasMissingPackets() {
@@ -42,6 +47,10 @@ public class PacketWindow {
     public void clear() {
         Arrays.fill(packets,null);
         numPackets = 0;
+        dataLength = 0;
+    }
+    public int getDataLength() {
+        return dataLength;
     }
     public int size() {
         return size;

@@ -2,9 +2,8 @@ package packet;
 import helpers.*;
 
 public class PacketHeader {
-    private byte[] data;
-    private Packet packet;
-
+    private final byte[] data;
+    private final Packet packet;
 
     //Generates a header using the given packet
     public PacketHeader(Packet packet) {
