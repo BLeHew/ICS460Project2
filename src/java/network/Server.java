@@ -19,13 +19,20 @@ public class Server {
 
 	private PacketGenerator packetGenerator;
 	private byte[] receiveData = new byte[512];
-	private int windowSize = 5;
+	private final Proxy proxy;
 
 	private int dataLength = receiveData.length - Packet.DATAHEADERSIZE;
 
-	private PacketWindow packetWindow;
+	private final PacketWindow packetWindow;
 
-	public Server() {
+	public Server(int windowSize, int interference, String ipAddress, int port) {
+
+	    assignIPAddress(ipAddress);
+	    createServerSocket(port);
+	    proxy = new Proxy(interference);
+
+	    packetWindow = new PacketWindow(windowSize);
+
 	    Runnable r = new Runnable() {
 	           @Override
 	           public void run() {
@@ -36,11 +43,15 @@ public class Server {
 	       t.setName("Server");
 	       t.start();
 	}
-	private void runWork() {
-	    createServerSocket(Driver.SERVERPORT);
+	private void assignIPAddress(String str) {
+	    try {
+            this.IPAddress = InetAddress.getByName(str);
+        } catch ( UnknownHostException x ) {
+            x.printStackTrace();
+        }
+    }
+    private void runWork() {
         createFileStreamOut("receiveFile.txt");
-
-        packetWindow = new PacketWindow(windowSize);
 
         packetGenerator = new PacketGenerator(receiveData.length);
 
@@ -76,20 +87,18 @@ public class Server {
     }
 
     private void writeDataToStream(PacketWindow pw) {
-        System.out.println("[SERVER]: writing " + pw.getDataLength() + " bytes to a file");
         for(int i = 0; i < pw.size(); i++) {
                 if(pw.get(i) != null && PacketData.getLen(pw.get(i)) != 0) {
                     adjustDataLength(PacketData.getLen(pw.get(i)));
                     writeDataToStream(pw.get(i).getData());
                 }
             }
-
+        System.out.println("[SERVER]: writing " + pw.getDataLength() + " bytes to a file");
         }
+
     private void adjustDataLength(short len) {
-        if(len > 0) {
-    	    if(len - Packet.DATAHEADERSIZE < dataLength) {
-                dataLength = len - Packet.DATAHEADERSIZE;
-            }
+        if ( len > 0 && len - Packet.DATAHEADERSIZE < dataLength ) {
+            dataLength = len - Packet.DATAHEADERSIZE;
         }
     }
 
@@ -99,7 +108,8 @@ public class Server {
 	    try {
             serverSocket.send(response);
             System.out.println("[SERVER]:Ack Packet sent with ackNo of: " + PacketData.getAckNo(response));
-        } catch ( IOException x ) {
+            System.out.println("[SERVER]: Checksum: " + PacketData.getCkSum(response));
+	    } catch ( IOException x ) {
             x.printStackTrace();
         }
 	}

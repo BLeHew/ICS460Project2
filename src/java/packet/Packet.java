@@ -46,7 +46,7 @@ public class Packet {
      * combines the data and header byte[]s and returns them as one byte[]
      * @return
      */
-    public byte[] getPacketAsArrayOfBytes(){
+    public byte[] getAsArrayOfBytes(){
 	    	return Converter.toBytes(this);
     }
 	public short getCksum() {

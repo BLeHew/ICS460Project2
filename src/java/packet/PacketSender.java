@@ -4,10 +4,11 @@ import java.io.*;
 import java.net.*;
 
 import generators.*;
+import helpers.*;
 import network.Proxy;
 
 public class PacketSender{
-    private final PacketGenerator packetGenerator;
+    private final PacketGenerator gen;
     private final Proxy proxy;
     private final PacketWindow packetWindow;
     private DatagramSocket socket;
@@ -16,13 +17,9 @@ public class PacketSender{
     private final int totalPackets;
     private int startOffset = 0;
 
-    private DatagramPacket sendPacket;
-    private DatagramPacket responsePacket;
-
-
     public PacketSender(PacketGenerator packetGenerator,int delayTime,int interference, int windowSize,
                         int port,int timeOut) {
-        this.packetGenerator = new PacketGenerator(packetGenerator);
+        this.gen = new PacketGenerator(packetGenerator);
         this.proxy =  new Proxy(interference);
         this.packetWindow = new PacketWindow(windowSize);
         totalPackets = packetGenerator.packetsLeft() + 1;
@@ -30,20 +27,16 @@ public class PacketSender{
         createSocket(port,timeOut);
     }
     public void start() {
-        while(packetGenerator.hasMoreData()) {
+        while(gen.hasMoreData()) {
                  //keep sending packet while the packetwindow isn't full and the packetgenerator has more packets to send.
-                 while(!packetWindow.isFull() && packetGenerator.hasMoreData()) {
+                 while(!packetWindow.isFull() && gen.hasMoreData()) {
 
-                    sendPacket = packetGenerator.getPacketToSend();
-                    packetWindow.add(sendPacket);
-
-                    sendPacket(proxy.interfere(sendPacket));
-
+                    sendPacket(gen.getPacketToSend());
                     delayForSimulation(delayTime);
                  }
 
                 while(packetWindow.hasPackets()) {
-                    if(!waitForResponsePacket()) {
+                    if(!waitForResponsePacket(gen.getResponsePacket(Packet.ACKPACKETHEADERSIZE))) {
                         for(int i = 0; i < packetWindow.size(); i++) {
                             if(packetWindow.get(i) != null) {
                                 System.out.println("[CLIENT]: getting packet from window with SeqNO: " + PacketData.getSeqNo(packetWindow.get(i)));
@@ -54,7 +47,7 @@ public class PacketSender{
                 }
         }
         //Send the End of File packet, signalling the end of the stream
-        sendEOFPacket();
+        sendEOFPacket(gen.getEoFPacket());
 
     }
 
@@ -74,35 +67,37 @@ public class PacketSender{
         }
     }
     public int totalPackets() {
-        return packetGenerator.packetsLeft() + 1;
+        return gen.packetsLeft() + 1;
     }
-    private void sendPacket(DatagramPacket packetToSend) {
+    private void sendPacket(DatagramPacket p) {
 
-        System.out.println("[CLIENT]: [SENDING]: " + PacketData.getSeqNo(sendPacket) + "/" + totalPackets);
+        System.out.println("[CLIENT]: [SENDING]: " + PacketData.getSeqNo(p) + "/" + totalPackets);
         System.out.println("[CLIENT]: PACKET_OFFSET: " + startOffset + " - END: "
-                                                   + (startOffset += sendPacket.getLength())
+                                                   + (startOffset += p.getLength())
                                                    + "\n");
-        System.out.println("[CLIENT]:  packet ACK: " + PacketData.getAckNo(sendPacket));
-        System.out.println("[CLIENT]:  packet Len: " + PacketData.getLen(sendPacket));
-        System.out.println("PACKET SENT TO PORT: " + sendPacket.getPort());
-        System.out.println("PACKET SENT TO Address: " + sendPacket.getAddress());
+        System.out.println("[CLIENT]:  packet ACK: " + PacketData.getAckNo(p));
+        System.out.println("[CLIENT]:  packet Len: " + PacketData.getLen(p));
 
         try {
-            socket.send(packetToSend);
+            socket.send(p);
         }catch(IOException io) {
             System.err.println("[CLIENT]: Error in sending packet");
         }
+        packetWindow.add(p);
     }
-    private boolean waitForResponsePacket() {
-        System.out.println("[CLIENT]: ....waiting for response packet...");
+    private boolean waitForResponsePacket(DatagramPacket p) {
+        System.out.println("\n[CLIENT]: ....waiting for response packet...");
+
         try {
-                responsePacket = packetGenerator.getResponsePacket(Packet.ACKPACKETHEADERSIZE);
-                socket.receive(responsePacket);
-                packetWindow.remove(responsePacket);
-                return true;
+            socket.receive(p);
         } catch ( IOException x ) {
             return false;
         }
+        System.out.print("[CLIENT]: ACK packet received with ACK of : " + PacketData.getAckNo(p));
+        System.out.println("[CLIENT]: And Checksum of : " + CheckSumTools.getChkSum(p));
+
+        packetWindow.remove(p);
+        return true;
     }
     private void resendPacket(DatagramPacket p) {
         System.out.println("[CLIENT]: [RESENDING] : " + PacketData.getSeqNo(p) + " /" + totalPackets);
@@ -112,13 +107,13 @@ public class PacketSender{
             x.printStackTrace();
         }
     }
-    private void sendEOFPacket() {
-        sendPacket = packetGenerator.getEoFPacket();
-        sendPacket(sendPacket);
-        packetWindow.add(sendPacket);
-        while(!waitForResponsePacket()) {
-            resendPacket(sendPacket);
+    private void sendEOFPacket(DatagramPacket p) {
+        sendPacket(p);
+        packetWindow.add(p);
+        System.out.print("[CLIENT]: SENT EOF PACKET WITH ACKNO: " + PacketData.getAckNo(p));
+        while(!waitForResponsePacket(p)) {
+            resendPacket(p);
         }
-        System.out.print("[CLIENT]: SENT EOF PACKET WITH SEQNO: " + PacketData.getSeqNo(sendPacket));
+
     }
 }

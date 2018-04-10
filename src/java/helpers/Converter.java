@@ -43,12 +43,6 @@ public class Converter {
     //source : https://stackoverflow.com/questions/5399798/byte-array-and-int-conversion-in-java
     public static int toInt(byte[] array) {
         return ByteBuffer.wrap(array).getInt();
-            /*
-            array[3] & 0xFF |
-            (array[2] & 0xFF) << 8 |
-            (array[1] & 0xFF) << 16 |
-            (array[0] & 0xFF) << 24;
-            */
     }
     public static short toShort(byte[] array) {
         return ByteBuffer.wrap(array).getShort();

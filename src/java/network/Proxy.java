@@ -52,6 +52,7 @@ public class Proxy {
         packet.setData(data);
         return packet;
     }
+    //simulate the checksum being messed up
     private DatagramPacket changeChecksumToBad(DatagramPacket packet) {
         PacketData.setCkSumBad(packet); //TODO actually use checksums.
         return packet;

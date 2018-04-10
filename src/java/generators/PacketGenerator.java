@@ -18,6 +18,7 @@ public class PacketGenerator {
     private int seqNo = 1;
     private int ackNo = 1;
 
+    //Copy constructor
     public PacketGenerator(PacketGenerator other) {
         this.dataLength = other.dataLength;
         this.fileStreamIn = other.fileStreamIn;
@@ -51,12 +52,11 @@ public class PacketGenerator {
 
         ackNo += dataLength + Packet.DATAHEADERSIZE;
 
-
         Packet packet = new Packet(Packet.CHECKSUMGOOD, (short) (dataLength), ackNo, seqNo, buffer);
 
         seqNo += 1;
 
-        byte[] temp = Arrays.copyOf(packet.getPacketAsArrayOfBytes(),dataLength + Packet.DATAHEADERSIZE);
+        byte[] temp = Arrays.copyOf(packet.getAsArrayOfBytes(),dataLength + Packet.DATAHEADERSIZE);
         byte[] ckSum = Arrays.copyOf(CheckSumTools.getChkSumInBytes(temp),2);
 
         temp[0] = ckSum[0];
@@ -69,7 +69,7 @@ public class PacketGenerator {
 
         Packet p = new Packet(Packet.CHECKSUMGOOD,(short)0,ackNo,seqNo,new byte[0]);
 
-        byte[] temp = p.getPacketAsArrayOfBytes();
+        byte[] temp = p.getAsArrayOfBytes();
         byte[] ckSum = CheckSumTools.getChkSumInBytes(temp);
 
         temp[0] = ckSum[0];
@@ -81,22 +81,27 @@ public class PacketGenerator {
         return new DatagramPacket(new byte[size],size);
     }
     public DatagramPacket getAckPacket(DatagramPacket p) {
+
         Packet packet = new Packet(Packet.CHECKSUMGOOD,(short) 0, PacketData.getAckNo(p));
 
-        return new DatagramPacket(packet.getPacketAsArrayOfBytes(), Packet.ACKPACKETHEADERSIZE,p.getAddress(),p.getPort());
+        byte[] temp = Arrays.copyOf(packet.getAsArrayOfBytes(),dataLength + Packet.DATAHEADERSIZE);
+        byte[] ckSum = Arrays.copyOf(CheckSumTools.getChkSumInBytes(temp),2);
+
+        temp[0] = ckSum[0];
+        temp[1] = ckSum[1];
+
+        return new DatagramPacket(temp, temp.length,p.getAddress(),p.getPort());
     }
     /**
      *
      * @return true if the FileStream has more data in it to send, false if not
      */
     public boolean hasMoreData() {
-        boolean value  = false;
         try {
-            value = fileStreamIn.available() != 0;
+            return fileStreamIn.available() != 0;
         } catch ( IOException x ) {
-            x.printStackTrace();
+            return false;
         }
-        return value;
     }
     public int dataLeft() {
         try {
@@ -106,13 +111,11 @@ public class PacketGenerator {
         }
     }
     public int packetsLeft() {
-        int numPacketsLeft = 0;
         try {
-            numPacketsLeft = fileStreamIn.available()/dataLength;
+            return fileStreamIn.available()/dataLength;
         } catch ( IOException x ) {
-            x.printStackTrace();
+            return 0;
         }
-        return numPacketsLeft;
     }
     private void readFileStreamIntoBuffer() {
         //Using 0 for the offset, since were already creating the header in the packet class
