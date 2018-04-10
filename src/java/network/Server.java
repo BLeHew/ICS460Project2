@@ -120,7 +120,8 @@ public class Server {
 	    response = packetGenerator.getAckPacket(request);
 
 	    try {
-            serverSocket.send(proxy.interfere(response));
+            //serverSocket.send(proxy.interfere(response));
+            serverSocket.send(response);
             System.out.println("[SERVER]:Ack Packet sent with ackNo of: " + PacketData.getAckNo(response));
             System.out.println("[SERVER]: Checksum: " + PacketData.getCkSum(response));
 	    } catch ( IOException x ) {
