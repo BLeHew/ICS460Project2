@@ -24,7 +24,7 @@ public class Driver {
          * int interference -- the percentage of packets that will be dropped or corrupted
          * int delay -- the delay time in milliseconds of the simulation
          */
-       Client client = new Client(500,2000,1,Driver.CLIENTPORT, 0, 1000);
+       Client client = new Client(50,2000,5,Driver.CLIENTPORT, 20, 1000);
 
        /*
         * Server Constructor parameters:
@@ -34,7 +34,7 @@ public class Driver {
         * int port -- see client
         */
 
-       Server server = new Server(1,0,"localhost",Driver.SERVERPORT);
+       Server server = new Server(5,20,"localhost",Driver.SERVERPORT);
 
        // clientOrServerMethod();
     		//userEnterInterferencePercentage();

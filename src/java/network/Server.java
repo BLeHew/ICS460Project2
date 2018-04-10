@@ -93,8 +93,7 @@ public class Server {
                     writeDataToStream(pw.get(i).getData());
                 }
             }
-        System.out.println("[SERVER]: writing " + pw.getDataLength() + " bytes to a file");
-        }
+       }
 
     private void adjustDataLength(short len) {
         if ( len > 0 && len - Packet.DATAHEADERSIZE < dataLength ) {
@@ -106,7 +105,7 @@ public class Server {
 	    response = packetGenerator.getAckPacket(request);
 
 	    try {
-            serverSocket.send(response);
+            serverSocket.send(proxy.interfere(response));
             System.out.println("[SERVER]:Ack Packet sent with ackNo of: " + PacketData.getAckNo(response));
             System.out.println("[SERVER]: Checksum: " + PacketData.getCkSum(response));
 	    } catch ( IOException x ) {
@@ -114,6 +113,7 @@ public class Server {
         }
 	}
 	private boolean verifyPacket() {
+
 			//boolean retval =  //TODO method to calculate checksum from data, match?
 	        System.out.print("[SERVER]: ");
 	        System.out.println(CheckSumTools.testChkSum(request) ? "Packet is valid" : "Packet is invalid");

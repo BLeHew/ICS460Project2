@@ -84,7 +84,7 @@ public class PacketGenerator {
 
         Packet packet = new Packet(Packet.CHECKSUMGOOD,(short) 0, PacketData.getAckNo(p));
 
-        byte[] temp = Arrays.copyOf(packet.getAsArrayOfBytes(),dataLength + Packet.DATAHEADERSIZE);
+        byte[] temp = Arrays.copyOf(packet.getAsArrayOfBytes(),Packet.ACKPACKETHEADERSIZE);
         byte[] ckSum = Arrays.copyOf(CheckSumTools.getChkSumInBytes(temp),2);
 
         temp[0] = ckSum[0];

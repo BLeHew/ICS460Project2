@@ -29,13 +29,13 @@ public class Proxy {
 
         if(j < errorPercent) {
             switch(i) {
-                case 1: System.out.println("[PROXY]: !!Byte changed in packet number: " + PacketData.getSeqNo(packet) + " !!");
+                case 1: System.out.println("[PROXY]: !!Byte changed in packet with AckNo: " + PacketData.getAckNo(packet) + " !!");
                     return changeByteInPacket(copy);
-                case 2: System.out.println("[PROXY]: !!Check sum altered in packet number: " + PacketData.getSeqNo(packet) + " !!");
+                case 2: System.out.println("[PROXY]: !!Check sum altered in packet with AckNo: " + PacketData.getAckNo(packet) + " !!");
                     return changeChecksumToBad(copy);
-                case 3: System.out.println("[PROXY]: !!Byte dropped in packet number: " + PacketData.getSeqNo(packet) + " !!");
+                case 3: System.out.println("[PROXY]: !!Byte dropped in packet with AckNo: " + PacketData.getAckNo(packet) + " !!");
                     return dropByteFromPacket(copy);
-                case 4: System.out.println("[PROXY]: !!Packet dropped!  number: " + PacketData.getSeqNo(packet) + " !!");
+                case 4: System.out.println("[PROXY]: !!Packet dropped!  AckNo: " + PacketData.getAckNo(packet) + " !!");
                     return makePacketDisappear(copy);
             }
         }
@@ -47,9 +47,7 @@ public class Proxy {
 
     //simulate byte value change in packet
     private DatagramPacket changeByteInPacket(DatagramPacket packet) {
-        byte[] data = packet.getData();
-        data[13]=(byte)(r.nextInt(1));
-        packet.setData(data);
+        packet.getData()[6] = (byte)(r.nextInt(10));
         return packet;
     }
     //simulate the checksum being messed up
@@ -60,7 +58,7 @@ public class Proxy {
 
     //Simulate missing byte in packet
     private DatagramPacket dropByteFromPacket(DatagramPacket packet) {
-        byte[] missingData = new byte[packet.getData().length - 1];
+        byte[] missingData = Arrays.copyOf(packet.getData(), packet.getLength() - 1);
         packet.setData(missingData);
         return packet;
     }

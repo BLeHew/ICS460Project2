@@ -79,7 +79,7 @@ public class PacketSender{
         System.out.println("[CLIENT]:  packet Len: " + PacketData.getLen(p));
 
         try {
-            socket.send(p);
+            socket.send(proxy.interfere(p));
         }catch(IOException io) {
             System.err.println("[CLIENT]: Error in sending packet");
         }
@@ -93,11 +93,12 @@ public class PacketSender{
         } catch ( IOException x ) {
             return false;
         }
-        System.out.print("[CLIENT]: ACK packet received with ACK of : " + PacketData.getAckNo(p));
-        System.out.println("[CLIENT]: And Checksum of : " + CheckSumTools.getChkSum(p));
-
-        packetWindow.remove(p);
-        return true;
+        if(CheckSumTools.testChkSum(p)) {
+            packetWindow.remove(p);
+            return true;
+        }
+        else
+            return false;
     }
     private void resendPacket(DatagramPacket p) {
         System.out.println("[CLIENT]: [RESENDING] : " + PacketData.getSeqNo(p) + " /" + totalPackets);
