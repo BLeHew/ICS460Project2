@@ -10,8 +10,7 @@ public class PacketWindow {
     private int numPackets;
     private final int size;
     private int dataLength;
-
-    private boolean hasPackets = false;
+    private int eofIndex;
 
     public PacketWindow(int size) {
         this.size = size;
@@ -19,19 +18,67 @@ public class PacketWindow {
         dataLength = 0;
 
     }
-    public void add(DatagramPacket p) {
+    public boolean add(DatagramPacket p) {
         int index = (PacketData.getSeqNo(p) - 1) % size;
 
-        if(packets[index] == null) {
-            //only create the copy packet if needed
-            byte[] temp = Arrays.copyOf(p.getData(), p.getLength());
+        if(alreadyHas(p)) {
+            return false;
+        }
 
-            DatagramPacket copy = new DatagramPacket(temp,temp.length,p.getAddress(),p.getPort());
+        byte[] temp = Arrays.copyOf(p.getData(), p.getLength());
 
-            packets[index] = copy;
-            numPackets++;
-            dataLength += (PacketData.getLen(copy) - 12);
-          }
+        DatagramPacket copy =
+            new DatagramPacket(temp, temp.length, p.getAddress(), p.getPort());
+
+        packets[index] = copy;
+        numPackets++;
+        dataLength += (PacketData.getLen(copy) - 12);
+        return true;
+
+
+    }
+    public boolean canBeWritten() {
+
+        boolean write = false;
+
+
+        if(hasMissingPackets()) {
+            return write;
+        }
+
+        int i = 0;
+        while(!write && i < size) {
+            if(PacketData.getLen(packets[i]) == 0) {
+                write = true;
+            }
+            i++;
+        }
+        return write;
+    }
+    public int getEoFIndex() {
+        return eofIndex;
+    }
+    public boolean containsEoF() {
+        for(int i = 0; i < packets.length;i++) {
+            if(packets[i] != null) {
+                if(PacketData.getLen(packets[i]) == 0) {
+                    eofIndex = i;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean alreadyHas(DatagramPacket p) {
+        for(int i = 0; i < packets.length; i++) {
+            if(packets[i] != null) {
+                if(PacketData.getAckNo(p) == PacketData.getAckNo(packets[i])) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
     public boolean hasMissingPackets() {
         int i = 0;
@@ -70,9 +117,6 @@ public class PacketWindow {
                 if(PacketData.getAckNo(packets[i]) == otherAckno){
                     packets[i] = null;
                     numPackets--;
-                    if(isEmpty()) {
-                        hasPackets = false;
-                    }
                 }
             }
         }
@@ -90,6 +134,9 @@ public class PacketWindow {
             }
         }
         System.out.print("\n");
+    }
+    public int numPackets() {
+        return numPackets;
     }
 
 }

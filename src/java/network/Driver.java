@@ -1,19 +1,20 @@
 package network;
-import java.util.*;
-import org.apache.commons.cli.*;
-
 
 public class Driver {
 	//------------- public map for all nodes on network----
 	public static int CLIENTPORT = 9875;
     public static int SERVERPORT = 9876;
     public static String IPADDRESS = "localhost";
-    public static int INTERFERENCE_PERCENTAGE = 0;
-    public static int PACKET_SIZE = 500;
+    public static int INTERFERENCE_PERCENTAGE = 20;
+    public static int PACKET_SIZE = 50;
     public static int WINDOW_SIZE = 5;
     public static int TIMEOUT_INTERVAL = 2000;
     @SuppressWarnings("unused")
     public static void main(String args[]) {
+
+        Server server = new Server(WINDOW_SIZE ,INTERFERENCE_PERCENTAGE ,IPADDRESS,Driver.SERVERPORT);
+        Client client = new Client(PACKET_SIZE, TIMEOUT_INTERVAL, WINDOW_SIZE,Driver.CLIENTPORT, INTERFERENCE_PERCENTAGE, 1000);
+            /*
     		//  command line flags code
 	    	Options options = new Options();
 	    	options.addOption("boot", true, "boot client or server");
@@ -32,14 +33,14 @@ public class Driver {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-	   	PACKET_SIZE = Integer.parseInt(cmd.getOptionValue("s"));
-	    	TIMEOUT_INTERVAL = Integer.parseInt(cmd.getOptionValue("t"));
-	    	WINDOW_SIZE = Integer.parseInt(cmd.getOptionValue("w"));
-	    	INTERFERENCE_PERCENTAGE = (int) Double.parseDouble((cmd.getOptionValue("d"))) * 100;
-	    IPADDRESS = cmd.getOptionValue("ip");
-	    
+        PACKET_SIZE = Integer.parseInt(cmd.getOptionValue("s"));
+        TIMEOUT_INTERVAL = Integer.parseInt(cmd.getOptionValue("t"));
+        WINDOW_SIZE = Integer.parseInt(cmd.getOptionValue("w"));
+        INTERFERENCE_PERCENTAGE = (int) Double.parseDouble( (cmd.getOptionValue("d"))) * 100;
+        IPADDRESS = cmd.getOptionValue("ip");
+
 	    	//  end of command line flags code
-	    	
+
         /* Client Constructor parameters:
          * int packetSize -- the size of each packet sent, 1-500.
          * int timeOut -- the duration before the client socket times out, in milliseconds
@@ -54,7 +55,7 @@ public class Driver {
          * int interference -- see client
          * InetAddress iPAddress -- the iPAddress to set this server to.
          * int port -- see client
-         */
+
 	    	if (cmd.getOptionValue("boot").equals("client")) {
 	    		   CLIENTPORT = Integer.parseInt(cmd.getOptionValue("port"));
 	    	       Client client = new Client(PACKET_SIZE, TIMEOUT_INTERVAL, WINDOW_SIZE,Driver.CLIENTPORT, INTERFERENCE_PERCENTAGE, 1000);
@@ -66,5 +67,6 @@ public class Driver {
 	    	       Server server = new Server(WINDOW_SIZE ,INTERFERENCE_PERCENTAGE ,IPADDRESS,Driver.SERVERPORT);
 	    	       Client client = new Client(PACKET_SIZE, TIMEOUT_INTERVAL, WINDOW_SIZE,Driver.CLIENTPORT, INTERFERENCE_PERCENTAGE, 1000);
 	    	}
+	    	*/
     }
 }

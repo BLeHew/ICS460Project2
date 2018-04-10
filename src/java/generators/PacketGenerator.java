@@ -65,7 +65,8 @@ public class PacketGenerator {
         return new DatagramPacket(temp, temp.length,ipAddress,port);
     }
     public DatagramPacket getEoFPacket() {
-        seqNo++;
+        seqNo += 1;
+        ackNo += 1000;
 
         Packet p = new Packet(Packet.CHECKSUMGOOD,(short)0,ackNo,seqNo,new byte[0]);
 

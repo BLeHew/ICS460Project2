@@ -8,7 +8,7 @@ import packet.*;
 
 public class Proxy {
 
-    private int errorPercent;
+    private final int errorPercent;
 
     private Random r;
 
@@ -24,11 +24,8 @@ public class Proxy {
 
         DatagramPacket copy = new DatagramPacket(temp,temp.length,packet.getAddress(),packet.getPort());
 
-        int i = r.nextInt(4) + 1;
-        int j = r.nextInt(100);
-
-        if(j < errorPercent) {
-            switch(i) {
+        if(r.nextInt(100) < errorPercent) {
+            switch(r.nextInt(4) + 1) {
                 case 1: System.out.println("[PROXY]: !!Byte changed in packet with AckNo: " + PacketData.getAckNo(packet) + " !!");
                     return changeByteInPacket(copy);
                 case 2: System.out.println("[PROXY]: !!Check sum altered in packet with AckNo: " + PacketData.getAckNo(packet) + " !!");
