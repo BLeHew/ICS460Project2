@@ -62,43 +62,37 @@ public class Server {
             request = packetGenerator.getResponsePacket(receiveData.length);
             receivePacketIntoSocket(request);
 
+            if (packetWindow.isFull()) {
+                writeDataToStream(packetWindow);
+                packetWindow.clear();
+            }
+
             if(verifyPacket()) {
                 packetWindow.add(request);
                 printPacketInfo();
                 respondPositive();
 
-                if(packetWindow.alreadyHas(request)) {
-                    resendAck(request);
-                }
-                if (packetWindow.isFull()) {
+                if(PacketData.getLen(request) == 0 ) {
                     writeDataToStream(packetWindow);
-                    packetWindow.clear();
+                    keepGoing = false;
+                    break;
                 }
+
             }
-            if(packetWindow.canBeWritten()) {
-                writeDataToStream(packetWindow);
-                packetWindow.clear();
-                keepGoing = false;
-            }
+
 
         } while ( keepGoing );
-
         serverSocket.close();
         System.out.println("[SERVER]: Server socket closed");
     }
 
     private void writeDataToStream(PacketWindow pw) {
-        int length = pw.size();
-
-        if(pw.containsEoF()) {
-            length = pw.getEoFIndex();
-        }
-        for(int i = 0; i < length; i++) {
+        for(int i = 0; i < pw.size(); i++) {
                 if(pw.get(i) != null && PacketData.getLen(pw.get(i)) != 0) {
                     adjustDataLength(PacketData.getLen(pw.get(i)));
                     writeDataToStream(pw.get(i).getData());
-                    }
                 }
+            }
        }
 
     private void adjustDataLength(short len) {
@@ -106,16 +100,7 @@ public class Server {
             dataLength = len - Packet.DATAHEADERSIZE;
         }
     }
-    private void resendAck(DatagramPacket p) {
-        response = packetGenerator.getAckPacket(p);
-        System.out.println("[SERVER]: Packet already received, resending ACK : " + PacketData.getAckNo(p));
-        try {
-            serverSocket.send(response);
-        } catch ( IOException x ) {
-            x.printStackTrace();
-        }
 
-    }
     private void respondPositive() {
 	    response = packetGenerator.getAckPacket(request);
 
@@ -157,10 +142,10 @@ public class Server {
     }
     private void receivePacketIntoSocket(DatagramPacket p) {
         try {
-            serverSocket.setSoTimeout(10000);
             serverSocket.receive(p);
         } catch ( IOException x ) {
-            System.err.println("[SERVER] Waiting for packets...");
+            System.err.println("[SERVER] Error receiving packet into socket.");
+            x.printStackTrace();
         }
     }
 
@@ -179,7 +164,6 @@ public class Server {
      */
     private void createServerSocket(int port) {
         try {
-
             serverSocket = new DatagramSocket(port);
             System.out.println("[SERVER] Server socket started on port: " + serverSocket.getLocalPort());
         } catch ( SocketException x ) {
