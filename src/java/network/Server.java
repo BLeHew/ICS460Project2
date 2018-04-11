@@ -72,8 +72,8 @@ public class Server {
                 if(PacketData.getSeqNo(request) == expectedSeqNum) {
                     adjustDataLength(PacketData.getLen(request));
                     writeDataToStream(request.getData());
+                    System.out.println(System.currentTimeMillis() + " " + PacketData.getSeqNo(request) + " RECV");
                     respondPositive();
-                    System.out.println("RECV " + System.currentTimeMillis() + " " + PacketData.getSeqNo(request) + " RECV");
                     expectedSeqNum++;
                 }
                 else {
@@ -96,24 +96,9 @@ public class Server {
     private void respondPositive() {
 	    response = packetGenerator.getAckPacket(request);
 	    System.out.println("SENDing ACK " + PacketData.getAckNo(response) + " " +  System.currentTimeMillis() + " " + proxy.send(response, serverSocket));
-	    /*
-	    try {
-            serverSocket.send(response);
-
-            /*
-            System.out.println("[SERVER]:Ack Packet sent with ackNo of: " + PacketData.getAckNo(response));
-            System.out.println("[SERVER]: Checksum: " + PacketData.getCkSum(response));
-
-	    } catch ( IOException x ) {
-            x.printStackTrace();
-        }
-	    */
 	}
 	private boolean verifyPacket() {
-
-			//boolean retval =  //TODO method to calculate checksum from data, match?
-	        //System.out.print("[SERVER]: ");
-	       // System.out.println(CheckSumTools.testChkSum(request) ? "Packet is valid" : "Packet is invalid");
+	    System.out.print(CheckSumTools.testChkSum(request) ? "RECV " : ("CRPT " + System.currentTimeMillis() + " " +  PacketData.getAckNo(request) + "\n"));
 			return CheckSumTools.testChkSum(request);
 	}
 	private void printPacketInfo() {

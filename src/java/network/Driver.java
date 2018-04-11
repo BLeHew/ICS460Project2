@@ -1,5 +1,7 @@
 package network;
 
+import org.apache.commons.cli.*;
+
 public class Driver {
     //------------- public map for all nodes on network----
     public static int CLIENTPORT = 9875;
@@ -11,11 +13,7 @@ public class Driver {
     public static int TIMEOUT_INTERVAL = 2000;
     @SuppressWarnings("unused")
     public static void main(String args[]) {
-        Server server = new Server(WINDOW_SIZE ,INTERFERENCE_PERCENTAGE ,IPADDRESS,Driver.SERVERPORT);
-        Client client = new Client(PACKET_SIZE, TIMEOUT_INTERVAL, WINDOW_SIZE,Driver.CLIENTPORT, INTERFERENCE_PERCENTAGE, 1000);
-    }
-}
-        /*
+
             //  command line flags code
             Options options = new Options();
             options.addOption("boot", true, "boot client or server");
@@ -70,7 +68,7 @@ public class Driver {
          * int interference -- see client
          * InetAddress iPAddress -- the iPAddress to set this server to.
          * int port -- see client
-
+        */
         if (cmd.hasOption("boot")) {
             if (cmd.getOptionValue("boot").equals("client")) {
                 if (cmd.hasOption("port")) {
@@ -91,4 +89,4 @@ public class Driver {
     }
 
 }
-*/
+

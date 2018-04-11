@@ -43,7 +43,7 @@ public class PacketSender{
 
                     while(!waitForResponsePacket()){
                         System.out.print("ReSend. ");
-                        send(packet,socket);
+                        send(packetWindow.get(0),socket);
                     }
                  }
         }
@@ -52,10 +52,11 @@ public class PacketSender{
         System.out.print("Sending ");
         packet = gen.getEoFPacket();
         send(packet,socket);
+        packetWindow.add(packet);
 
         while(!waitForResponsePacket()) {
             System.out.print("ReSend. ");
-            send(packet,socket);
+            send(packetWindow.get(0),socket);
         }
         System.out.println("[CLIENT]: Closing socket");
 

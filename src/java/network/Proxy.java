@@ -16,16 +16,20 @@ public class Proxy {
     public Proxy(int errorPercent) {
         this.errorPercent = errorPercent;
         r = new Random();
-        r.setSeed(6000);
+        //r.setSeed(6000);
     }
 
     public String interfere(DatagramPacket packet,String str) {
         if(r.nextInt(100) < errorPercent) {
             switch(r.nextInt(4) + 1) {
                 case 1: str = changeByteInPacket(packet);
+                break;
                 case 2: str = changeChecksumToBad(packet);
+                break;
                 case 3: str = dropByteFromPacket(packet);
+                break;
                 case 4: str = makePacketDisappear(packet);
+                break;
             }
         }
         return str;
