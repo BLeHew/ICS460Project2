@@ -138,5 +138,8 @@ public class PacketWindow {
     public int numPackets() {
         return numPackets;
     }
+    public void remove(int i) {
+        packets[i] = null;
+    }
 
 }

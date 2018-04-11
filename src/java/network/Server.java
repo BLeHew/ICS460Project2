@@ -57,28 +57,30 @@ public class Server {
 
         boolean keepGoing = true;
 
+        int expectedSeqNum = 1;
+
         do {
 
             request = packetGenerator.getResponsePacket(receiveData.length);
             receivePacketIntoSocket(request);
 
             if(verifyPacket()) {
-                packetWindow.add(request);
-                printPacketInfo();
-                respondPositive();
 
-                if(packetWindow.alreadyHas(request)) {
-                    resendAck(request);
+                if(PacketData.getLen(request) == 0) {
+                    keepGoing = false;
                 }
-                if (packetWindow.isFull()) {
-                    writeDataToStream(packetWindow);
-                    packetWindow.clear();
+                if(PacketData.getSeqNo(request) == expectedSeqNum) {
+                    adjustDataLength(PacketData.getLen(request));
+                    writeDataToStream(request.getData());
+                    respondPositive();
+                    System.out.println("RECV " + System.currentTimeMillis() + " " + PacketData.getSeqNo(request) + " RECV");
+                    expectedSeqNum++;
                 }
-            }
-            if(packetWindow.canBeWritten()) {
-                writeDataToStream(packetWindow);
-                packetWindow.clear();
-                keepGoing = false;
+                else {
+                    System.out.println("DUPL " + System.currentTimeMillis() + " " +  PacketData.getSeqNo(request) + " !Seq");
+                    respondPositive();
+                }
+
             }
 
         } while ( keepGoing );
@@ -86,52 +88,32 @@ public class Server {
         serverSocket.close();
         System.out.println("[SERVER]: Server socket closed");
     }
-
-    private void writeDataToStream(PacketWindow pw) {
-        int length = pw.size();
-
-        if(pw.containsEoF()) {
-            length = pw.getEoFIndex();
-        }
-        for(int i = 0; i < length; i++) {
-                if(pw.get(i) != null && PacketData.getLen(pw.get(i)) != 0) {
-                    adjustDataLength(PacketData.getLen(pw.get(i)));
-                    writeDataToStream(pw.get(i).getData());
-                    }
-                }
-       }
-
     private void adjustDataLength(short len) {
-        if ( len > 0 && len - Packet.DATAHEADERSIZE < dataLength ) {
+        if (len > 0 && len - Packet.DATAHEADERSIZE < dataLength ) {
             dataLength = len - Packet.DATAHEADERSIZE;
         }
     }
-    private void resendAck(DatagramPacket p) {
-        response = packetGenerator.getAckPacket(p);
-        System.out.println("[SERVER]: Packet already received, resending ACK : " + PacketData.getAckNo(p));
-        try {
-            serverSocket.send(response);
-        } catch ( IOException x ) {
-            x.printStackTrace();
-        }
-
-    }
     private void respondPositive() {
 	    response = packetGenerator.getAckPacket(request);
-
+	    System.out.println("SENDing ACK " + PacketData.getAckNo(response) + " " +  System.currentTimeMillis() + " " + proxy.send(response, serverSocket));
+	    /*
 	    try {
-            serverSocket.send(proxy.interfere(response));
+            serverSocket.send(response);
+
+            /*
             System.out.println("[SERVER]:Ack Packet sent with ackNo of: " + PacketData.getAckNo(response));
             System.out.println("[SERVER]: Checksum: " + PacketData.getCkSum(response));
+
 	    } catch ( IOException x ) {
             x.printStackTrace();
         }
+	    */
 	}
 	private boolean verifyPacket() {
 
 			//boolean retval =  //TODO method to calculate checksum from data, match?
-	        System.out.print("[SERVER]: ");
-	        System.out.println(CheckSumTools.testChkSum(request) ? "Packet is valid" : "Packet is invalid");
+	        //System.out.print("[SERVER]: ");
+	       // System.out.println(CheckSumTools.testChkSum(request) ? "Packet is valid" : "Packet is invalid");
 			return CheckSumTools.testChkSum(request);
 	}
 	private void printPacketInfo() {
@@ -149,7 +131,7 @@ public class Server {
     }
     private void writeDataToStream(byte[] recData) {
         try {
-            System.out.println("[SERVER]: writing " + dataLength + " bytes to a file");
+            //System.out.println("[SERVER]: writing " + dataLength + " bytes to a file");
             fileStreamOut.write(recData, Packet.DATAHEADERSIZE, dataLength);
         } catch ( IOException x ) {
             x.printStackTrace();
