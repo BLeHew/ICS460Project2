@@ -17,6 +17,7 @@ public class PacketGenerator {
 
     private int seqNo = 1;
     private int ackNo = 1;
+    private int offset = 0;
 
     //Copy constructor
     public PacketGenerator(PacketGenerator other) {
@@ -62,7 +63,8 @@ public class PacketGenerator {
         temp[0] = ckSum[0];
         temp[1] = ckSum[1];
 
-        return new DatagramPacket(temp, temp.length,ipAddress,port);
+
+        return new DatagramPacket(temp,temp.length,ipAddress,port);
     }
     public DatagramPacket getEoFPacket() {
         seqNo += 1;
@@ -75,6 +77,8 @@ public class PacketGenerator {
 
         temp[0] = ckSum[0];
         temp[1] = ckSum[1];
+        // public DatagramPacket(byte buf[], int offset, int length,
+        //InetAddress address, int port) {
 
         return new DatagramPacket(temp,temp.length,ipAddress,port);
     }

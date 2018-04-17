@@ -34,16 +34,17 @@ public class PacketSender{
 
                  while(!packetWindow.isFull() && gen.hasMoreData()) {
                     packet = gen.getPacketToSend();
+
                     packetWindow.add(packet);
 
                     System.out.print("Sending");
                     send(packet,socket);
 
-                    delayForSimulation(delayTime);
+                    //delayForSimulation(delayTime);
 
                     while(!waitForResponsePacket()){
                         System.out.print("ReSend. ");
-                        send(packetWindow.get(0),socket);
+                        resend(packetWindow.get(0),socket);
                     }
                  }
         }
@@ -51,21 +52,31 @@ public class PacketSender{
 
         System.out.print("Sending ");
         packet = gen.getEoFPacket();
-        send(packet,socket);
+
         packetWindow.add(packet);
+
+        send(packet,socket);
+
 
         while(!waitForResponsePacket()) {
             System.out.print("ReSend. ");
-            send(packetWindow.get(0),socket);
+            resend(packetWindow.get(0),socket);
         }
         System.out.println("[CLIENT]: Closing socket");
 
         socket.close();
 
     }
-    private void send(DatagramPacket p,DatagramSocket s) {
+    private void resend(DatagramPacket p, DatagramSocket s) {
         System.out.println(" " + PacketData.getSeqNo(p) + " "
-            + startOffset + ":" +  (startOffset +=PacketData.getLen(p))
+            + startOffset + ":" +  (startOffset + PacketData.getLen(p))
+            + " " + System.currentTimeMillis()
+            + " " + proxy.send(p, s));
+    }
+    private void send(DatagramPacket p,DatagramSocket s) {
+
+        System.out.println(" " + PacketData.getSeqNo(p) + " "
+            + startOffset + ":" +  (startOffset + PacketData.getLen(p))
             + " " + System.currentTimeMillis()
             + " " + proxy.send(p, s));
     }
@@ -97,19 +108,9 @@ public class PacketSender{
             return false;
         }
         if(CheckSumTools.testChkSum(packet)) {
-            packetWindow.remove(packet);
-            //System.out.println("[CLIENT]: Response packet received with ACK of: " + PacketData.getAckNo(p) + " removing from window.");
-            //System.out.println("[CLIENT]: Number of packets in window: " + packetWindow.numPackets());
+            startOffset += packetWindow.remove(packet);
             return true;
         }
         return false;
-    }
-    private void resendPacket(DatagramPacket p) {
-       // System.out.println("[CLIENT]: [RESENDING] : " + PacketData.getSeqNo(p) + " /" + totalPackets);
-        try {
-            socket.send(p);
-        } catch ( IOException x ) {
-            x.printStackTrace();
-        }
     }
     }

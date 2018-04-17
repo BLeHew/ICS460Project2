@@ -65,10 +65,6 @@ public class Server {
             receivePacketIntoSocket(request);
 
             if(verifyPacket()) {
-
-                if(PacketData.getLen(request) == 0) {
-                    keepGoing = false;
-                }
                 if(PacketData.getSeqNo(request) == expectedSeqNum) {
                     adjustDataLength(PacketData.getLen(request));
                     writeDataToStream(request.getData());
@@ -80,6 +76,7 @@ public class Server {
                     System.out.println("DUPL " + System.currentTimeMillis() + " " +  PacketData.getSeqNo(request) + " !Seq");
                     respondPositive();
                 }
+
 
             }
 
@@ -99,24 +96,10 @@ public class Server {
 	}
 	private boolean verifyPacket() {
 	    System.out.print(CheckSumTools.testChkSum(request) ? "RECV " : ("CRPT " + System.currentTimeMillis() + " " +  PacketData.getAckNo(request) + "\n"));
-			return CheckSumTools.testChkSum(request);
+	    return CheckSumTools.testChkSum(request);
 	}
-	private void printPacketInfo() {
-        System.out.println("\n[SERVER]: PACKET RECEIVED. INFO: \n"
-            + "[SERVER]: PACKET_NUMBER: "
-            + PacketData.getSeqNo(request)
-            + "\n"
-            + "[SERVER]: PACKET_LENGTH: "
-            + PacketData.getLen(request)
-            + "\n"
-            + "[SERVER]: PACKET_OFFSET: "
-            + "START:" + startOffset + " - END: "+ (startOffset += PacketData.getLen(request))
-            + "\n"
-            );
-    }
     private void writeDataToStream(byte[] recData) {
         try {
-            //System.out.println("[SERVER]: writing " + dataLength + " bytes to a file");
             fileStreamOut.write(recData, Packet.DATAHEADERSIZE, dataLength);
         } catch ( IOException x ) {
             x.printStackTrace();
@@ -124,10 +107,9 @@ public class Server {
     }
     private void receivePacketIntoSocket(DatagramPacket p) {
         try {
-            serverSocket.setSoTimeout(10000);
             serverSocket.receive(p);
         } catch ( IOException x ) {
-            System.err.println("[SERVER] Waiting for packets...");
+            //Just wait
         }
     }
 
@@ -142,7 +124,6 @@ public class Server {
     /**
      * Creates a new server socket at the designated port
      * @param port
-     * @throws SocketException if the port is unavailable
      */
     private void createServerSocket(int port) {
         try {

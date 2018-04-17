@@ -7,13 +7,13 @@ public class Driver {
     public static int CLIENTPORT = 9875;
     public static int SERVERPORT = 9876;
     public static String IPADDRESS = "localhost";
-    public static int INTERFERENCE_PERCENTAGE = 20;
+    public static int INTERFERENCE_PERCENTAGE = 30;
     public static int PACKET_SIZE = 50;
     public static int WINDOW_SIZE = 1;
-    public static int TIMEOUT_INTERVAL = 2000;
+    public static int TIMEOUT_INTERVAL = 1000;
+
     @SuppressWarnings("unused")
     public static void main(String args[]) {
-
             //  command line flags code
             Options options = new Options();
             options.addOption("boot", true, "boot client or server");

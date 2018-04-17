@@ -110,16 +110,19 @@ public class PacketWindow {
 
         return packets[index];
     }
-    public void remove(DatagramPacket p) {
+    public int remove(DatagramPacket p) {
+        int out = 0;
         int otherAckno = PacketData.getAckNo(p);
         for(int i = 0; i < packets.length; i++) {
             if(packets[i] != null) {
                 if(PacketData.getAckNo(packets[i]) == otherAckno){
+                    out = PacketData.getLen(packets[i]);
                     packets[i] = null;
                     numPackets--;
                 }
             }
         }
+        return out;
     }
     private boolean isEmpty() {
         return numPackets < 1;

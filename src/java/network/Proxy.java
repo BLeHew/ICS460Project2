@@ -16,20 +16,16 @@ public class Proxy {
     public Proxy(int errorPercent) {
         this.errorPercent = errorPercent;
         r = new Random();
-        //r.setSeed(6000);
+        r.setSeed(6000);
     }
 
     public String interfere(DatagramPacket packet,String str) {
         if(r.nextInt(100) < errorPercent) {
             switch(r.nextInt(4) + 1) {
-                case 1: str = changeByteInPacket(packet);
-                break;
-                case 2: str = changeChecksumToBad(packet);
-                break;
-                case 3: str = dropByteFromPacket(packet);
-                break;
-                case 4: str = makePacketDisappear(packet);
-                break;
+                case 1: return changeByteInPacket(packet);
+                case 2: return changeChecksumToBad(packet);
+                case 3: return dropByteFromPacket(packet);
+                case 4: return makePacketDisappear(packet);
             }
         }
         return str;
@@ -37,9 +33,12 @@ public class Proxy {
     public String send(DatagramPacket p, DatagramSocket s) {
         byte[] temp = Arrays.copyOf(p.getData(), p.getLength());
         DatagramPacket copy = new DatagramPacket(temp,temp.length,p.getAddress(),p.getPort());
+
         String str = "SENT";
+
+        str = interfere(copy, str);
+
         try {
-            str = interfere(copy, str);
             s.send(copy);
         } catch ( IOException x ) {
             x.printStackTrace();
@@ -56,7 +55,7 @@ public class Proxy {
     }
     //simulate the checksum being messed up
     private String changeChecksumToBad(DatagramPacket packet) {
-        PacketData.setCkSumBad(packet); //TODO actually use checksums.
+        PacketData.setCkSumBad(packet);
         return "CRPT";
     }
 

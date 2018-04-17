@@ -10,12 +10,12 @@ public class Packet {
     public static final short DATAHEADERSIZE = 12;
     public static final short ACKPACKETHEADERSIZE = 8;
 	private final short ckSum;
-    private short len;
+    private short len = 0;
     private final int ackNo;
     private final int seqNo;
     private final byte data[];
 
-    private PacketHeader header;
+    //private PacketHeader header;
     //regular data packet
     public Packet(short ckSum,
                   short len,
@@ -39,8 +39,7 @@ public class Packet {
         this.data = null;
     }
     public byte[] generateHeaderAsArrayOfBytes() {
-    	header = new PacketHeader(this);
-    	return header.getHeader();
+    	return new PacketHeader(this).getData();
     }
     /**
      * combines the data and header byte[]s and returns them as one byte[]

@@ -20,7 +20,7 @@ public class PacketHeader {
         }
 
     }
-    public byte[] getHeader() {
+    public byte[] getData() {
         return data;
     }
     private void addCheckSum() {
