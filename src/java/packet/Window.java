@@ -4,7 +4,7 @@ import java.net.*;
 import java.util.*;
 
 
-public class PacketWindow {
+public class Window {
 
     private DatagramPacket[] packets;
     private int numPackets;
@@ -12,14 +12,14 @@ public class PacketWindow {
     private int dataLength;
     private int eofIndex;
 
-    public PacketWindow(int size) {
+    public Window(int size) {
         this.size = size;
         packets = new DatagramPacket[size];
         dataLength = 0;
 
     }
     public boolean add(DatagramPacket p) {
-        int index = (PacketData.getSeqNo(p) - 1) % size;
+        int index = (Data.getSeqNo(p) - 1) % size;
 
         if(alreadyHas(p)) {
             return false;
@@ -32,7 +32,7 @@ public class PacketWindow {
 
         packets[index] = copy;
         numPackets++;
-        dataLength += (PacketData.getLen(copy) - 12);
+        dataLength += (Data.getLen(copy) - 12);
         return true;
 
 
@@ -48,7 +48,7 @@ public class PacketWindow {
 
         int i = 0;
         while(!write && i < size) {
-            if(PacketData.getLen(packets[i]) == 0) {
+            if(Data.getLen(packets[i]) == 0) {
                 write = true;
             }
             i++;
@@ -61,7 +61,7 @@ public class PacketWindow {
     public boolean containsEoF() {
         for(int i = 0; i < packets.length;i++) {
             if(packets[i] != null) {
-                if(PacketData.getLen(packets[i]) == 0) {
+                if(Data.getLen(packets[i]) == 0) {
                     eofIndex = i;
                     return true;
                 }
@@ -73,7 +73,7 @@ public class PacketWindow {
     public boolean alreadyHas(DatagramPacket p) {
         for(int i = 0; i < packets.length; i++) {
             if(packets[i] != null) {
-                if(PacketData.getAckNo(p) == PacketData.getAckNo(packets[i])) {
+                if(Data.getAckNo(p) == Data.getAckNo(packets[i])) {
                     return true;
                 }
             }
@@ -112,11 +112,11 @@ public class PacketWindow {
     }
     public int remove(DatagramPacket p) {
         int out = 0;
-        int otherAckno = PacketData.getAckNo(p);
+        int otherAckno = Data.getAckNo(p);
         for(int i = 0; i < packets.length; i++) {
             if(packets[i] != null) {
-                if(PacketData.getAckNo(packets[i]) == otherAckno){
-                    out = PacketData.getLen(packets[i]);
+                if(Data.getAckNo(packets[i]) == otherAckno){
+                    out = Data.getLen(packets[i]);
                     packets[i] = null;
                     numPackets--;
                 }
@@ -129,11 +129,11 @@ public class PacketWindow {
     }
 
     public void print() {
-        System.out.print("PacketWindow packets : ");
+        System.out.print("Window packets : ");
         for(DatagramPacket p : packets) {
             if(p != null) {
-                System.out.print("len: " + PacketData.getLen(p));
-                System.out.print(" seqNo: " + PacketData.getSeqNo(p) + "\t");
+                System.out.print("len: " + Data.getLen(p));
+                System.out.print(" seqNo: " + Data.getSeqNo(p) + "\t");
             }
         }
         System.out.print("\n");

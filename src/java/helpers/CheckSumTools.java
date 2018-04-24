@@ -7,6 +7,18 @@ import packet.*;
 
 public class CheckSumTools {
 
+    public static short getChkSum(byte[] b) {
+        Checksum checksum = new CRC32();
+
+        byte[] temp = new byte[b.length - 2];
+
+        System.arraycopy(b, 2, temp, 0, b.length - 2);
+
+        checksum.update(temp,0,temp.length);
+
+        return (short)checksum.getValue();
+    }
+
     public static short getChkSum(DatagramPacket p) {
         Checksum checksum = new CRC32();
 
@@ -34,7 +46,6 @@ public class CheckSumTools {
         return Converter.toBytes((short) checkSumValue);
     }
     public static boolean testChkSum(DatagramPacket p) {
-
-        return PacketData.getCkSum(p) == getChkSum(p);
+        return Data.getCkSum(p) == getChkSum(p);
     }
 }

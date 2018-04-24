@@ -7,7 +7,7 @@ public class Driver {
     public static int CLIENTPORT = 9875;
     public static int SERVERPORT = 9876;
     public static String IPADDRESS = "localhost";
-    public static int INTERFERENCE_PERCENTAGE = 30;
+    public static int INTERFERENCE_PERCENTAGE = 0;
     public static int PACKET_SIZE = 50;
     public static int WINDOW_SIZE = 1;
     public static int TIMEOUT_INTERVAL = 1000;

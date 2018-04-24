@@ -53,8 +53,8 @@ public class Client {
         while(!createFileStream(inFromUser.nextLine()));
 
         PacketGenerator pg = new PacketGenerator(fileStreamIn, packetSize, IPAddress,Driver.SERVERPORT);
-        PacketSender packetSender = new PacketSender(pg, delay, interference, windowSize, port, timeOut);
-        packetSender.start();
+        Sender sender = new Sender(pg, delay, interference, windowSize, port, timeOut);
+        sender.start();
     }
 
 

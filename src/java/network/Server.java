@@ -23,7 +23,7 @@ public class Server {
 
 	private int dataLength = receiveData.length - Packet.DATAHEADERSIZE;
 
-	private final PacketWindow packetWindow;
+	private final Window window;
 
 	public Server(int windowSize, int interference, String ipAddress, int port) {
 
@@ -31,7 +31,7 @@ public class Server {
 	    createServerSocket(port);
 	    proxy = new Proxy(interference);
 
-	    packetWindow = new PacketWindow(windowSize);
+	    window = new Window(windowSize);
 
 	    Runnable r = new Runnable() {
 	           @Override
@@ -65,15 +65,16 @@ public class Server {
             receivePacketIntoSocket(request);
 
             if(verifyPacket()) {
-                if(PacketData.getSeqNo(request) == expectedSeqNum) {
-                    adjustDataLength(PacketData.getLen(request));
+                if(Data.getSeqNo(request) == expectedSeqNum) {
+                    //System.out.print("RECV ");
+                    adjustDataLength(Data.getLen(request));
                     writeDataToStream(request.getData());
-                    System.out.println(System.currentTimeMillis() + " " + PacketData.getSeqNo(request) + " RECV");
+                    //System.out.println(System.currentTimeMillis() + " " + Data.getSeqNo(request) + " RECV");
                     respondPositive();
                     expectedSeqNum++;
                 }
                 else {
-                    System.out.println("DUPL " + System.currentTimeMillis() + " " +  PacketData.getSeqNo(request) + " !Seq");
+                    System.out.println("DUPL " + System.currentTimeMillis() + " " +  Data.getSeqNo(request) + " !Seq");
                     respondPositive();
                 }
 
@@ -92,10 +93,11 @@ public class Server {
     }
     private void respondPositive() {
 	    response = packetGenerator.getAckPacket(request);
-	    System.out.println("SENDing ACK " + PacketData.getAckNo(response) + " " +  System.currentTimeMillis() + " " + proxy.send(response, serverSocket));
+	    //System.out.println("SENDing ACK " + Data.getAckNo(response) + " " +  System.currentTimeMillis() + " " + proxy.send(response, serverSocket));
+	    proxy.send(response, serverSocket);
 	}
 	private boolean verifyPacket() {
-	    System.out.print(CheckSumTools.testChkSum(request) ? "RECV " : ("CRPT " + System.currentTimeMillis() + " " +  PacketData.getAckNo(request) + "\n"));
+	    //System.out.print(CheckSumTools.testChkSum(request) ? "" : ("CRPT " + System.currentTimeMillis() + " " +  Data.getAckNo(request) + "\n"));
 	    return CheckSumTools.testChkSum(request);
 	}
     private void writeDataToStream(byte[] recData) {

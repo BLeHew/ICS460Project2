@@ -7,10 +7,10 @@ import generators.*;
 import helpers.*;
 import network.Proxy;
 
-public class PacketSender{
+public class Sender{
     private final PacketGenerator gen;
     private final Proxy proxy;
-    private final PacketWindow packetWindow;
+    private final Window window;
     private DatagramSocket socket;
     private DatagramPacket packet;
     private final int delayTime;
@@ -18,67 +18,65 @@ public class PacketSender{
     private final int totalPackets;
     private int startOffset = 0;
 
-    public PacketSender(PacketGenerator packetGenerator,int delayTime,int interference, int windowSize,
+    public Sender(PacketGenerator packetGenerator,int delayTime,int interference, int windowSize,
                         int port,int timeOut) {
         this.gen = new PacketGenerator(packetGenerator);
         this.proxy =  new Proxy(interference);
-        this.packetWindow = new PacketWindow(windowSize);
+        this.window = new Window(windowSize);
         totalPackets = packetGenerator.packetsLeft() + 1;
         this.delayTime = delayTime;
         createSocket(port,timeOut);
     }
     public void start() {
+
+        long startTime = System.currentTimeMillis();
+
         while(gen.hasMoreData()) {
                  //keep sending packet while the packetwindow isn't full and the packetgenerator has more packets to send.
+            packet = gen.getDataPacket();
 
+            window.add(packet);
 
-                 while(!packetWindow.isFull() && gen.hasMoreData()) {
-                    packet = gen.getPacketToSend();
+            System.out.print("Sending");
+            send(packet, socket);
 
-                    packetWindow.add(packet);
+            // delayForSimulation(delayTime);
 
-                    System.out.print("Sending");
-                    send(packet,socket);
-
-                    //delayForSimulation(delayTime);
-
-                    while(!waitForResponsePacket()){
-                        System.out.print("ReSend. ");
-                        resend(packetWindow.get(0),socket);
-                    }
-                 }
+            while ( !waitForResponsePacket() ) {
+                System.out.print("ReSend. ");
+                send(window.get(0), socket);
+            }
         }
         //Send the End of File packet, signalling the end of the stream
 
         System.out.print("Sending ");
         packet = gen.getEoFPacket();
 
-        packetWindow.add(packet);
+        window.add(packet);
 
         send(packet,socket);
 
+        long endTime = System.currentTimeMillis() - startTime;
 
+        System.out.print("Took " + endTime/1000 + " seconds to send : " + totalPackets +  " packets");
         while(!waitForResponsePacket()) {
-            System.out.print("ReSend. ");
-            resend(packetWindow.get(0),socket);
+            //System.out.print("ReSend. ");
+            send(window.get(0),socket);
         }
         System.out.println("[CLIENT]: Closing socket");
 
         socket.close();
 
     }
-    private void resend(DatagramPacket p, DatagramSocket s) {
-        System.out.println(" " + PacketData.getSeqNo(p) + " "
-            + startOffset + ":" +  (startOffset + PacketData.getLen(p))
-            + " " + System.currentTimeMillis()
-            + " " + proxy.send(p, s));
-    }
     private void send(DatagramPacket p,DatagramSocket s) {
-
-        System.out.println(" " + PacketData.getSeqNo(p) + " "
-            + startOffset + ":" +  (startOffset + PacketData.getLen(p))
+        /*
+        System.out.println(" " + Data.getSeqNo(p) + " "
+            + startOffset + ":" +  (startOffset + Data.getLen(p))
             + " " + System.currentTimeMillis()
             + " " + proxy.send(p, s));
+        */
+        System.out.println("Sending packet wiht ckSum of : " + Data.getCkSum(p));
+        proxy.send(p, s);
     }
     private void createSocket(int port,int timeOut) {
         try {
@@ -104,12 +102,18 @@ public class PacketSender{
 
         try {
             socket.receive(packet);
+            System.out.print("[AckRcvd]: " + Data.getSeqNo(packet));
         } catch ( IOException x ) {
+            System.out.println("[Timeout]");
             return false;
         }
         if(CheckSumTools.testChkSum(packet)) {
-            startOffset += packetWindow.remove(packet);
+            System.out.println(" [MoveWnd]");
+            startOffset += window.remove(packet);
             return true;
+        }
+        else {
+            System.out.println(" [ErrAck].");
         }
         return false;
     }

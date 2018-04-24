@@ -2,9 +2,7 @@ package generators;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
 
-import helpers.*;
 import packet.*;
 
 public class PacketGenerator {
@@ -17,7 +15,6 @@ public class PacketGenerator {
 
     private int seqNo = 1;
     private int ackNo = 1;
-    private int offset = 0;
 
     //Copy constructor
     public PacketGenerator(PacketGenerator other) {
@@ -43,7 +40,7 @@ public class PacketGenerator {
         this.fileStreamIn = null;
     }
 
-    public DatagramPacket getPacketToSend() {
+    public DatagramPacket getDataPacket() {
 
         if(dataLeft() < dataLength) {
             buffer = new byte[dataLeft()];
@@ -53,49 +50,27 @@ public class PacketGenerator {
 
         ackNo += dataLength + Packet.DATAHEADERSIZE;
 
-        Packet packet = new Packet(Packet.CHECKSUMGOOD, (short) (dataLength), ackNo, seqNo, buffer);
+        Packet p = new Packet((short) (dataLength), ackNo, seqNo, buffer);
 
         seqNo += 1;
 
-        byte[] temp = Arrays.copyOf(packet.getAsArrayOfBytes(),dataLength + Packet.DATAHEADERSIZE);
-        byte[] ckSum = Arrays.copyOf(CheckSumTools.getChkSumInBytes(temp),2);
-
-        temp[0] = ckSum[0];
-        temp[1] = ckSum[1];
-
-
-        return new DatagramPacket(temp,temp.length,ipAddress,port);
+        return new DatagramPacket(p.get(), dataLength + Packet.DATAHEADERSIZE ,ipAddress,port);
     }
     public DatagramPacket getEoFPacket() {
-        seqNo += 1;
+
         ackNo += 1000;
 
-        Packet p = new Packet(Packet.CHECKSUMGOOD,(short)0,ackNo,seqNo,new byte[0]);
-
-        byte[] temp = p.getAsArrayOfBytes();
-        byte[] ckSum = CheckSumTools.getChkSumInBytes(temp);
-
-        temp[0] = ckSum[0];
-        temp[1] = ckSum[1];
-        // public DatagramPacket(byte buf[], int offset, int length,
-        //InetAddress address, int port) {
-
-        return new DatagramPacket(temp,temp.length,ipAddress,port);
+        Packet p = new Packet((short)0,ackNo,seqNo,new byte[0]);
+        return new DatagramPacket(p.get(),p.get().length,ipAddress,port);
     }
     public DatagramPacket getResponsePacket(int size) {
         return new DatagramPacket(new byte[size],size);
     }
     public DatagramPacket getAckPacket(DatagramPacket p) {
 
-        Packet packet = new Packet(Packet.CHECKSUMGOOD,(short) 0, PacketData.getAckNo(p));
+        Packet packet = new Packet((short) 0, Data.getAckNo(p));
 
-        byte[] temp = Arrays.copyOf(packet.getAsArrayOfBytes(),Packet.ACKPACKETHEADERSIZE);
-        byte[] ckSum = Arrays.copyOf(CheckSumTools.getChkSumInBytes(temp),2);
-
-        temp[0] = ckSum[0];
-        temp[1] = ckSum[1];
-
-        return new DatagramPacket(temp, temp.length,p.getAddress(),p.getPort());
+        return new DatagramPacket(packet.get(), packet.get().length,p.getAddress(),p.getPort());
     }
     /**
      *
@@ -123,8 +98,6 @@ public class PacketGenerator {
         }
     }
     private void readFileStreamIntoBuffer() {
-        //Using 0 for the offset, since were already creating the header in the packet class
-
         try {
             fileStreamIn.read(buffer,0, dataLength);
         } catch ( IOException x ) {

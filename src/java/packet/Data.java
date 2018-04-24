@@ -4,7 +4,7 @@ import java.net.*;
 
 import helpers.*;
 
-public class PacketData {
+public class Data {
     //helper method to get the sequence number from the given data packet
     public static int getSeqNo(DatagramPacket p) {
         byte[] temp = new byte[4];

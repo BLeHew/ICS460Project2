@@ -1,16 +1,14 @@
 package packet;
 import helpers.*;
 
-public class PacketHeader {
+public class Header {
     private final byte[] data;
     private final Packet packet;
 
     //Generates a header using the given packet
-    public PacketHeader(Packet packet) {
+    public Header(Packet packet) {
         data = new byte[Packet.DATAHEADERSIZE];
         this.packet = packet;
-
-
         addLen();
         addAckNo();
         addCheckSum();
@@ -24,8 +22,10 @@ public class PacketHeader {
         return data;
     }
     private void addCheckSum() {
-        data[0] = 0;
-        data[1] = 0;
+        byte[] ckSum = Converter.toBytes(packet.getCkSum());
+
+        data[0] = ckSum[0];
+        data[1] = ckSum[1];
     }
     private void addLen() {
         byte[] length = Converter.toBytes(packet.getLen());

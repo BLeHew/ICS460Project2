@@ -55,7 +55,7 @@ public class Proxy {
     }
     //simulate the checksum being messed up
     private String changeChecksumToBad(DatagramPacket packet) {
-        PacketData.setCkSumBad(packet);
+        Data.setCkSumBad(packet);
         return "CRPT";
     }
 
